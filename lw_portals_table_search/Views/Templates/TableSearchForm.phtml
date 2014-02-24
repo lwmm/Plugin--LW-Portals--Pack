@@ -1,0 +1,163 @@
+<style>
+    #hiddenBaseField{display: none;}
+</style>
+
+<script>
+    $(document).ready(function() {
+        function getPreparedArray()
+        {
+            var tableArray =  new Array();
+            <?php
+            $i = 0;
+            foreach ($this->tablesCollection as $table) {
+                $searchableFields = $table->getValueByKey("searchableFields");
+                
+                echo "" . PHP_EOL;
+                echo "tableArray['" . $table->getValueByKey("name") . "'] = new Object();" . PHP_EOL;
+                echo "tableArray['" . $table->getValueByKey("name") . "']['searchableFields'] = new Object();" . PHP_EOL;
+                $k = 0;
+                foreach($searchableFields as $searchField){
+                    echo "tableArray['" . $table->getValueByKey("name") . "']['searchableFields']['". $k++ ."'] = '" . $searchField . "';" . PHP_EOL;
+                }
+                echo "" . PHP_EOL;
+                $i++;
+            }
+            ?>
+            return tableArray;
+        }
+        
+        $('#tablenames').change(function() {
+            $("div#searchFields div#containerSearchFields").html("");
+            
+            var tablename = $(this).find(":selected").text();
+            var tableArray = getPreparedArray();
+                        
+            for (var index in tableArray[tablename]['searchableFields']) {
+                if (tableArray[tablename]['searchableFields'].hasOwnProperty(index)) {
+                    
+                    var searchField = tableArray[tablename]['searchableFields'][index];
+                    $("div#hiddenBaseField > div label").attr("for", "searchQuery_" + searchField);
+                    $("div#hiddenBaseField > div label").html(searchField);
+                    $("div#hiddenBaseField > div > div > input").attr("id", "searchQuery_" + searchField);
+                    $("div#hiddenBaseField > div > div > input").attr("name", searchField);
+                    $("div#hiddenBaseField > div > div > input").val("");
+                   
+                    $("div#hiddenBaseField > div").clone().appendTo("div#searchFields div#containerSearchFields");
+                }
+            }
+        });
+        
+        <?php if($this->post): ?>
+            <?php $post = $this->post; unset($post["tablename"]); ?>
+            <?php foreach($post as $field => $searchQuery): ?>
+                $("div#hiddenBaseField > div label").attr("for", "searchQuery_<?php echo $field ?>");
+                $("div#hiddenBaseField > div label").html("<?php echo $field ?>");
+                $("div#hiddenBaseField > div > div > input").attr("id", "searchQuery_<?php echo $field ?>");
+                $("div#hiddenBaseField > div > div > input").attr("name", "<?php echo $field ?>");
+                $("div#hiddenBaseField > div > div > input").val("<?php echo $searchQuery ?>");
+
+                $("div#hiddenBaseField > div").clone().appendTo("div#searchFields div#containerSearchFields");
+            <?php endforeach; ?>
+        <?php endif; ?>
+    });
+</script>
+
+<?php if($this->entity): ?>
+    <h1>Tabellensuche - <?php echo $this->entity->getValueByKey("name"); ?></h1>
+<?php else: ?>
+    <h1>Tabellensuche - Alle Portale</h1>
+<?php endif; ?>
+<hr>    
+
+<form id="md5check_form" class="form-horizontal" role="form" action="<?php echo $this->actionUrl; ?>" method="POST">
+    <div class="form-group" class="col-sm-4">
+        <label for="tablenames" class="col-sm-2 control-label">Tabelle</label>
+        <div class="col-sm-4">
+            <select id="tablenames" name="tablename" class="form-control" size="15">
+                <?php foreach ($this->tablesCollection as $table): ?>
+                    <option value="<?php echo $table->getValueByKey("name"); ?>" <?php if($this->post["tablename"] == $table->getValueByKey("name")): ?>selected="selected"<?php endif; ?>><?php echo $table->getValueByKey("name"); ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div><br>
+        
+        <div id="searchFields" class="col-sm-6">
+            <h5>Verf&uuml;gbare Suchfelder</h5>
+            <div id="containerSearchFields">
+                
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="btn btn-default">suchen</button>
+        </div>
+    </div>
+</form>
+
+<div id="hiddenBaseField">
+    <div class="form-group">
+        <label for="searchQuery" class="col-sm-3 control-label">Name</label>
+        <div class="col-sm-7">
+            <input id="searchQuery" class="form-control" type="text" name="searchQuery" value=""/>
+        </div>       
+    </div>
+</div>
+    
+<?php if($this->results): ?>    
+    <?php foreach($this->results as $portal => $results): ?>
+        <?php 
+        $extendedFields = array();
+        $tablename = $results["tablename"];
+        unset($results["tablename"]);
+
+        foreach ($results as $field => $searchResults) {
+            $searchQuery = $searchResults["searchQuery"];
+            unset($searchResults["searchQuery"]);
+            foreach($searchResults as $sr){
+                foreach($sr as $key => $value){
+                    if($key != "id" && $key != "name"){
+                        $extendedFields[$key] = true;
+                    }
+                }
+            } 
+        } 
+        ?>
+        <h3><?php echo $portal; ?></h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Tabelle</th>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Suchstring</th>
+                    <th>Suchfeld</th>
+                    <?php foreach($extendedFields as $name => $isSet): ?>
+                        <th style="font-style: italic;"><?php echo $name; ?></th>
+                    <?php endforeach; ?>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($results as $field => $searchResults): ?>
+                    <?php $searchQuery = $searchResults["searchQuery"];unset($searchResults["searchQuery"]);?>
+                    <?php foreach($searchResults as $sr): ?>
+                        <tr>
+                            <td><?php echo $tablename ?></td>
+                            <td><?php echo $sr["id"]; ?></td>
+                            <td><?php echo $sr["name"] ?></td>
+                            <td><?php echo $searchQuery ?></td>
+                            <td><?php echo $field ?></td>
+                            <?php foreach($extendedFields as $name => $isSet): ?>
+                                <?php if(isset($sr[$name])): ?>
+                                    <td style="font-style: italic;"><?php echo $sr[$name]; ?></td>
+                                <?php else: ?>
+                                    <td>&nbsp;</td>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php endforeach; ?>
+<?php endif; ?>

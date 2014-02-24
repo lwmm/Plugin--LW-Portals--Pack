@@ -1,0 +1,70 @@
+var visits_points = [<?php
+    foreach ($this->piwikPhPVisitArray as $visitday => $results) {
+        $str.= "['" . $visitday . "'," . $results["nb_visits"] . "],";
+    }
+    echo substr($str, 0, strlen($str) - 1);
+    ?>];
+var uniq_visitors_points = [<?php
+    foreach ($this->piwikPhPVisitArray as $visitday => $results) {
+        $str2.= "['" . $visitday . "'," . $results["nb_uniq_visitors"] . "],";
+    }
+    echo substr($str2, 0, strlen($str2) - 1);
+    ?>];
+
+var plot2 = $.jqplot('piwik-chart', [visits_points,uniq_visitors_points],  {
+      title: '',
+    axesDefaults: {
+        show: false,
+        min: null,
+        max: null,
+        pad: 1
+    },
+    grid: {
+          backgroundColor: "white"
+      },
+      series: [{'label': 'Seitenbesuche' },{'label': 'Einzigartige Besucher' }], 
+
+      seriesDefaults: { // applies to all rows
+          lineWidth: 2,
+          rendererOptions: { smooth: true }
+      },
+      highlighter: {
+          show: true,
+          sizeAdjust: 7.5
+      },
+      legend: {
+          renderer: $.jqplot.EnhancedLegendRenderer,
+          show: true,
+          showLabels: true,
+          location: 'ne',
+          placement: 'outside',
+          fontSize: '11px',
+          fontFamily: ["Lucida Grande","Lucida Sans Unicode","Arial","Verdana","sans-serif"],
+          rendererOptions: {
+              seriesToggle: 'normal'
+          }
+      },
+    axes: {xaxis: {
+        <?php 
+        $i = 0;
+        foreach ($this->piwikPhPVisitArray as $visitday => $results) {
+            if($i == 0){
+                $minDate = $visitday;
+            }else if($i == (count($this->piwikPhPVisitArray) - 1)){
+                $maxDate = $visitday;
+            }
+            $i++;
+        }
+        ?>
+            tickRenderer: $.jqplot.CanvasAxisTickRenderer ,
+            renderer: $.jqplot.DateAxisRenderer,
+            tickOptions: {formatString: '%d.%m.%Y',angle: -45},
+            min: '<?php echo $minDate ?>',
+            max: '<?php echo $maxDate; ?>',
+            tickInterval: '1 day'
+        },
+        yaxis: {
+            label:'Besuche'
+        }
+    }
+  }); 

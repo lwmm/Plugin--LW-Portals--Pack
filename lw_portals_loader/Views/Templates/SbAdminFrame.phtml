@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Portallist</title>
+
+    <!-- Core CSS - Include with every page -->
+    <link href="<?php echo $this->mediaUrl; ?>sb_admin2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="<?php echo $this->mediaUrl; ?>sb_admin2/font-awesome/css/font-awesome.css" rel="stylesheet">    
+
+    <!-- Page-Level Plugin CSS - Blank -->
+
+    <!-- SB Admin CSS - Include with every page -->
+    <link href="<?php echo $this->mediaUrl; ?>sb_admin2/css/sb-admin.css" rel="stylesheet">
+    
+    <!-- Core Scripts - Include with every page -->
+    <script src="<?php echo $this->mediaUrl; ?>sb_admin2/js/jquery-1.10.2.js"></script>
+    <script src="<?php echo $this->mediaUrl; ?>sb_admin2/js/bootstrap.min.js"></script>
+    <script src="<?php echo $this->mediaUrl; ?>sb_admin2/js/plugins/metisMenu/jquery.metisMenu.js"></script>    
+
+    <!-- Page-Level Plugin Scripts - Blank -->
+
+    <!-- SB Admin Scripts - Include with every page -->
+    <script src="<?php echo $this->mediaUrl; ?>sb_admin2/js/sb-admin.js"></script>
+
+    <style>
+        .nav li.selected{background-color: #EEE;}
+    </style>
+</head>
+
+
+<body>
+
+    <div id="wrapper">
+        
+        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".sidebar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">Infosystem</a>
+            </div>
+            <!-- /.navbar-header -->
+
+        </nav>
+        <!-- /.navbar-static-top -->
+
+        <nav class="navbar-default navbar-static-side" role="navigation">
+            <div class="sidebar-collapse">
+                <ul class="nav" id="side-menu">
+                    <li class="sidebar-search">
+                        <div class="input-group custom-search-form">
+                            <img src="<?php echo $this->mediaUrl; ?>sb_admin2/img/LogicWorks-logo.png">
+                        </div>
+                    </li>
+                    <li <?php if($this->portalsPlugin == "LwPortalsList"): ?>class="selected"<?php endif; ?>><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsList", "cmd" => "showList")); ?>"><span class="glyphicon glyphicon-list-alt"></span> Portale</a></li>
+                    <li <?php if($this->portalsPlugin == "LwPortalsPlugins" || $this->portalsPlugin == "LwPortalsPackages"): ?>class="active"<?php endif; ?>>
+                        <a href="#"><span class="glyphicon glyphicon-tasks"></span> Module<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li <?php if($this->portalsPlugin == "LwPortalsPlugins"): ?>class="selected"<?php endif; ?>><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsPlugins", "cmd" => "showList")); ?>">Plugins</a></li>
+                            <li <?php if($this->portalsPlugin == "LwPortalsPackages"): ?>class="selected"<?php endif; ?>><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsPackages", "cmd" => "showList")); ?>">Packages</a></li>
+                        </ul>
+                        <!-- /.nav-second-level -->
+                    </li>
+                    <?php if($this->isAdmin): ?>
+                        <li <?php if($this->portalsPlugin == "LwPortalsMd5"): ?>class="selected"<?php endif; ?>><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsMd5", "cmd" => "showMd5CheckForm")); ?>"><span class="glyphicon glyphicon-retweet"></span> Md5 Abgleich</a></li>
+                        <li <?php if($this->portalsPlugin == "LwPortalsTableSearch"): ?>class="selected"<?php endif; ?>><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsTableSearch", "cmd" => "showTableSearchForm")); ?>"><span class="glyphicon glyphicon-search"></span> Tabellensuche</a></li>
+                        <li><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsCollector")); ?>"><span class="glyphicon glyphicon-stats"></span> Alle Portalstatistiken erneuern</a></li>
+                    <?php endif; ?>
+                    
+                </ul>
+                <!-- /#side-menu -->
+            </div>
+            <!-- /.sidebar-collapse -->
+        </nav>
+        <!-- /.navbar-static-side -->
+
+        <div id="page-wrapper">
+            <div class="row">
+                <div class="col-lg-11"><br>
+                    <?php echo $this->content; ?>
+                </div>
+                <!-- /.col-lg-12 -->
+            </div>
+            <!-- /.row -->
+        </div>
+        <!-- /#page-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+
+    
+
+    <!-- Page-Level Demo Scripts - Blank - Use for reference -->
+
+</body>
+
+</html>

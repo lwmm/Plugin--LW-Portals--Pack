@@ -1,0 +1,92 @@
+<?php $listtoolStats = $this->data; ?>
+
+var db_links_points = [<?php
+    foreach ($listtoolStats as $scan) {
+        $year = substr($scan["lw_date"], 0, 4);
+        $month = substr($scan["lw_date"], 4, 2);
+        $day = substr($scan["lw_date"], 6, 2);
+        $str.= "['" . $year . "-" . $month . "-" . $day . "'," . $scan["db_links"] . "],";
+    }
+    echo substr($str, 0, strlen($str) - 1);
+    ?>];
+var db_files_points = [<?php
+    foreach ($listtoolStats as $scan) {
+        $year = substr($scan["lw_date"], 0, 4);
+        $month = substr($scan["lw_date"], 4, 2);
+        $day = substr($scan["lw_date"], 6, 2);
+        $str2.= "['" . $year . "-" . $month . "-" . $day . "'," . $scan["db_files"] . "],";
+    }
+    echo substr($str2, 0, strlen($str2) - 1);
+    ?>];
+var dir_files_points = [<?php
+    foreach ($listtoolStats as $scan) {
+        $year = substr($scan["lw_date"], 0, 4);
+        $month = substr($scan["lw_date"], 4, 2);
+        $day = substr($scan["lw_date"], 6, 2);
+        $str3.= "['" . $year . "-" . $month . "-" . $day . "'," . $scan["dir_files"] . "],";
+    }
+    echo substr($str3, 0, strlen($str3) - 1);
+    ?>];
+var list_count_points = [<?php
+    foreach ($listtoolStats as $scan) {
+        $year = substr($scan["lw_date"], 0, 4);
+        $month = substr($scan["lw_date"], 4, 2);
+        $day = substr($scan["lw_date"], 6, 2);
+        $str4.= "['" . $year . "-" . $month . "-" . $day . "'," . $scan["list_count"] . "],";
+    }
+    echo substr($str4, 0, strlen($str4) - 1);
+    ?>];
+
+var plot1 = $.jqplot('listtool-chart', [db_links_points,db_files_points,dir_files_points,list_count_points],  {
+      title: '',
+    axesDefaults: {
+        show: false,
+        min: null,
+        max: null,
+        pad: 1
+    },
+    grid: {
+          backgroundColor: "white"
+      },
+      series: [{'label': 'Link-Eintr&auml;ge' },{'label': 'Datei-Eintr&auml;ge' },{'label': 'Dateien' },{'label': 'Listen' }], 
+
+      seriesDefaults: { // applies to all rows
+          lineWidth: 2,
+          rendererOptions: { smooth: true }
+      },
+      highlighter: {
+          show: true,
+          sizeAdjust: 7.5
+      },
+      legend: {
+          renderer: $.jqplot.EnhancedLegendRenderer,
+          show: true,
+          showLabels: true,
+          location: 'ne',
+          placement: 'outside',
+          fontSize: '11px',
+          fontFamily: ["Lucida Grande","Lucida Sans Unicode","Arial","Verdana","sans-serif"],
+          rendererOptions: {
+              seriesToggle: 'normal'
+          }
+      },
+    axes: {xaxis: {
+        <?php 
+        $minEntry = $listtoolStats[count($listtoolStats) -1];
+        $minDate = substr($minEntry["lw_date"], 6, 2) . "." . substr($minEntry["lw_date"], 4, 2) . "." . substr($minEntry["lw_date"], 0, 4);
+
+        $maxEntry = $listtoolStats[0];
+        $maxDate = substr($maxEntry["lw_date"], 6, 2) . "." . substr($maxEntry["lw_date"], 4, 2) . "." . substr($maxEntry["lw_date"], 0, 4);
+        ?>
+            tickRenderer: $.jqplot.CanvasAxisTickRenderer ,
+            renderer: $.jqplot.DateAxisRenderer,
+            tickOptions: {formatString: '%d.%m.%Y',angle: -45},
+            min: '<?php echo $minDate ?>',
+            max: '<?php echo $maxDate; ?>',
+            tickInterval: '1 day'
+        },
+        yaxis: {
+            label:'Anzahl'
+        }
+    }
+  }); 

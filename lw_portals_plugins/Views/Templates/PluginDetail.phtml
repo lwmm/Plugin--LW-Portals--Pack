@@ -1,0 +1,47 @@
+<script type="text/javascript" src="<?php echo $this->mediaUrl; ?>sb_admin2/js/plugins/dataTables/jquery.dataTables.js"></script>
+<script type="text/javascript" src="<?php echo $this->mediaUrl; ?>sb_admin2/js/plugins/dataTables/dataTables.bootstrap.js"></script>
+    
+<script>
+    $(document).ready(function() {
+        $('#pluginlist').dataTable({
+            "sPaginationType": "full_numbers",
+            "aoColumns": [null],
+            "bStateSave": true
+        });
+    });
+
+</script>
+
+<h1><?php echo $this->entity->getValueByKey("pluginname"); ?></h1>
+<hr>
+
+<a onclick="window.history.back();" style="cursor:pointer;"><span class="glyphicon glyphicon-arrow-left"></span></a><br><br>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <b>Installiert in folgenden Portalen</b>
+    </div>
+    <div class="panel-body">
+        <?php if(isset($this->pageIndexes["portals"])) { $indexPortals = $this->pageIndexes["portals"]; } else { $indexPortals = 0; } ?>
+        <?php $portals = $this->entity->getValueByKey("portals"); ?>
+        <?php if (count($portals) > 0): ?>
+            <table id="pluginlist" class="table table-striped table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>in folgenden Portalen vorhanden</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($portals as $portal): ?>
+                        <tr>
+                            <td><a style="display: block;" href="<?php echo \lw_page::getInstance($indexPortals)->getUrl(array("portalsPlugin" =>"LwPortalsList", "cmd" => "showDetail", "id" => $portal["id"])); ?>"><?php echo $portal["name"]; ?></a></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <p> Dieses Modul ist aktuell in keinem Portal installiert.</p>
+        <?php endif; ?>
+    </div>
+</div>
+    

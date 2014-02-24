@@ -1,0 +1,88 @@
+<?php if($this->entity): ?>
+    <h1>Md5 - <?php echo $this->entity->getValueByKey("name"); ?></h1>
+<?php else: ?>
+    <h1>Md5 - Alle Portale</h1>
+<?php endif; ?>
+<hr>    
+
+<form id="md5check_form" class="form-horizontal" role="form" action="<?php echo $this->actionUrl; ?>" method="POST" ENCTYPE="multipart/form-data">
+
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Datei Pfad</label>
+        <div class="col-sm-4">
+            <select id="configPath" name="configPath" class="form-control">
+                <?php foreach ($this->paths as $key => $value): ?>
+                    <option value="CONFIG:path_<?php echo $key; ?>" <?php if($this->post["configPath"] == $key): ?>selected="selected"<?php endif; ?>><?php echo $key; ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="col-sm-6">
+            <input id="filePath" class="form-control" type="text" name="path" value="<?php echo $this->post["path"]; ?>"/>
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label for="expectedMd5" class="col-sm-2 control-label">Md5 ( erwartet )</label>
+        <div class="col-sm-10">
+            <input id="expectedMd5" class="form-control" type="text" name="expectedMd5" value="<?php echo $this->post["expectedMd5"]; ?>"/>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="inputFile" class="col-sm-2 control-label">CSV Upload</label>
+        <div class="col-sm-10">
+            <input id="inputFile" name="inputFile" type="file">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="btn btn-default">pr&uuml;fen</button>
+        </div>
+    </div>
+</form>
+    
+<?php if($this->results): ?>    
+    <?php if($this->entity): ?>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Pfad</th>
+                    <th>Erwarteter Md5-Wert</th>
+                    <th>Server Md5-Wert</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($this->results[$this->entity->getValueByKey("name")] as $file): ?>
+                    <tr style="color: <?php if($file["expectedMd5"] == $file["recievedMd5"] && $file["expectedMd5"] != ""): ?>green<?php else: ?>darkred<?php endif; ?>">
+                        <td><?php echo $file["completePath"]; ?></td>
+                        <td><?php echo $file["expectedMd5"]; ?></td>
+                        <td><?php if(!$file["recievedMd5"]){ echo "Datei existiert nicht !"; } else { echo $file["recievedMd5"]; } ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php else: ?>
+        <?php foreach($this->results as $portal => $files): ?>
+            <h3><?php echo $portal; ?></h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Pfad</th>
+                        <th>Erwarteter Md5-Wert</th>
+                        <th>Server Md5-Wert</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($files as $file): ?>
+                        <tr style="color: <?php if($file["expectedMd5"] == $file["recievedMd5"] && $file["expectedMd5"] != ""): ?>green<?php else: ?>darkred<?php endif; ?>">
+                            <td><?php echo $file["completePath"]; ?></td>
+                            <td><?php echo $file["expectedMd5"]; ?></td>
+                            <td><?php if(!$file["recievedMd5"]){ echo "Datei existiert nicht !"; } else { echo $file["recievedMd5"]; } ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endforeach; ?>
+    <?php endif; ?>
+<?php endif; ?>

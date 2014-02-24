@@ -1,0 +1,84 @@
+<?php if ($this->response > 0): ?>
+    <script>
+        $(document).ready(function() {
+    <?php
+    if ($this->response == 1) {
+        $message = "Alle Portalinformationen wurden erfolgreich aktualisiert";
+    }
+    ?>
+            var data = $('<div style="background-color:#B2EBFD;padding:10px;"><h3 style="color: #175D99;"><?php echo $message; ?></h3></div>');
+            var popup = $('<div id="popup" style="border:2px solid #175D99;">');
+            popup.append(data);
+            $('body').append(popup);
+            popup.css("position", "absolute");
+            popup.css("top", ($(window).height() - popup.height()) / 2 + $(window).scrollTop() + "px");
+            popup.css("left", ($(window).width() - popup.width()) / 2 + $(window).scrollLeft() + "px");
+            popup.hide();
+            popup.fadeIn(1000, 'linear');
+            popup.delay(1500);
+            popup.fadeOut(1000, 'linear');
+        });
+    </script>
+<?php endif; ?>
+    
+<script type="text/javascript" src="<?php echo $this->mediaUrl; ?>sb_admin2/js/plugins/dataTables/jquery.dataTables.js"></script>
+<script type="text/javascript" src="<?php echo $this->mediaUrl; ?>sb_admin2/js/plugins/dataTables/dataTables.bootstrap.js"></script>
+    
+<script>
+    $(document).ready(function() {
+        $('#portallist').dataTable({
+            "sPaginationType": "full_numbers",
+            <?php if($this->isAdmin): ?>
+                "aoColumns": [null, null, null, {"bSortable": false}, {"bSortable": false}],
+            <?php else: ?>
+                "aoColumns": [null, null, null],
+            <?php endif; ?>
+            "bStateSave": true
+        });
+    });
+
+</script>
+
+<h1>Portale</h1>
+<hr>
+   
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <b>Installierte Portale</b>
+        <?php if($this->isAdmin): ?>
+            <a style="float: right" href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsList", "cmd" => "showAddForm")); ?>"><span class="glyphicon glyphicon-plus-sign"></span> Portal</a> &nbsp;&nbsp;
+        <?php endif; ?>
+    </div>
+    <div class="panel-body">
+        <?php if (count($this->collection) > 0): ?>
+            <table id="portallist" class="table table-striped table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th style="width: 100px;">Plugins</th>
+                        <th style="width: 100px;">Packages</th>
+                        <?php if($this->isAdmin): ?>
+                            <th style="width: 20px;">&nbsp;</th>
+                            <th style="width: 20px;">&nbsp;</th>
+                        <?php endif; ?>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($this->collection as $portal): ?>
+                        <tr>
+                            <td><a style="display:block" href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsList", "cmd" => "showDetail", "id" => $portal->getId())); ?>"><?php echo $portal->getValueByKey("name"); ?></a></td>
+                            <td><?php echo $portal->getValueByKey("plugins"); ?></td>
+                            <td><?php echo $portal->getValueByKey("packages"); ?></td>
+                            <?php if($this->isAdmin): ?>
+                            <td><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsList", "cmd" => "showEditForm", "id" => $portal->getId())); ?>"><span class="glyphicon glyphicon-pencil"></span></a></td>
+                                <td><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsList", "cmd" => "deleteEntry", "id" => $portal->getId())); ?>" onclick="if(confirm(unescape('Diesen Eintrag wirklich l%F6schen ?'))){ return true;} return false;"><span class="glyphicon glyphicon-trash"></span></a></td>
+                            <?php endif; ?>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <p>keine Portale vorhanden</p>
+        <?php endif; ?>
+    </div>
+</div>

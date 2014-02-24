@@ -1,0 +1,28 @@
+Für Alle Portal-Plugins:
+
+admin=1  ---- Bearbeitungsfunktionalitäten werden freigegeben
+
+
+
+Pluginaufruf Parameter ( wenn Portal-Plugin-Module einzelnd verwendet werden sollen ):
+
+portals=??          ---- index zur Seite, auf der das lw_portals_list Plugin einzelnd eingebunden ist
+md5=??              ----        "       lw_portals_md5              "
+collector=??        ----        "       lw_portals_collector        "
+plugins=??          ----        "       lw_portals_plugins          "
+packages=??         ----        "       lw_portals_packages         "
+
+
+"benötigte" Parameter je Plugin:
+lw_portals_loader   => ( "admin" => ? )
+lw_portals_list     => ( "admin" => ?, "md5" => ??, "collector" => ??, "plugins" => ??, "packages" => ?? )
+lw_portals_plugins  => ( "portals" => ?? )
+lw_portals_packages => ( "portals" => ?? )
+lw_portals_md5      => ( "admin" => ? )
+
+
+Wird das lw_portals_loader Plugin verwendet muss nur der "admin"-Parameter übergeben werden.
+
+
+"SB Admin 2" ist in  .../c_media/sb_admin2/  zu installieren 
+unter  ../c_media/sb_admin2/img/ eventuell ein Logo kopieren

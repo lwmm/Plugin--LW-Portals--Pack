@@ -1,0 +1,319 @@
+<?php if ($this->response > 0): ?>
+    <script>
+        $(document).ready(function() {
+    <?php
+    if ($this->response == 1) {
+        $message = "Portalinformationen wurden erfolgreich aktualisiert";
+    }
+    if ($this->response == 2) {
+        $message = "Neues Portal wurde erfolgreich angelegt";
+    }
+    if ($this->response == 3) {
+        $message = "Portal wurde erfolgreich bearbeitet";
+    }
+    ?>
+            var data = $('<div style="background-color:#B2EBFD;padding:10px;"><h3 style="color: #175D99;"><?php echo $message; ?></h3></div>');
+            var popup = $('<div id="popup" style="border:2px solid #175D99;">');
+            popup.append(data);
+            $('body').append(popup);
+            popup.css("position", "absolute");
+            popup.css("top", ($(window).height() - popup.height()) / 2 + $(window).scrollTop() + "px");
+            popup.css("left", ($(window).width() - popup.width()) / 2 + $(window).scrollLeft() + "px");
+            popup.hide();
+            popup.fadeIn(1000, 'linear');
+            popup.delay(1500);
+            popup.fadeOut(1000, 'linear');
+        });
+    </script>
+<?php endif; ?>
+
+<link rel="stylesheet" href="<?php echo $this->mediaUrl; ?>sb_admin2/css/plugins/dataTables/dataTables.bootstrap.css" />
+<link rel="stylesheet" href="<?php echo $this->mediaUrl; ?>sb_admin2/css/plugins/morris/morris-0.4.3.min.css" />
+
+<script src="<?php echo $this->mediaUrl; ?>sb_admin2/js/plugins/morris/raphael-2.1.0.min.js"></script>
+<script src="<?php echo $this->mediaUrl; ?>sb_admin2/js/plugins/morris/morris.js"></script>
+<script type="text/javascript" src="<?php echo $this->mediaUrl; ?>sb_admin2/js/plugins/dataTables/jquery.dataTables.js"></script>
+<script type="text/javascript" src="<?php echo $this->mediaUrl; ?>sb_admin2/js/plugins/dataTables/dataTables.bootstrap.js"></script>
+
+<link rel="stylesheet" type="text/css" href="<?php echo $this->mediaUrl; ?>jquery/jqplot/jquery.jqplot.min.css" />
+<script type="text/javascript" src="<?php echo $this->mediaUrl; ?>jquery/jqplot/jquery.jqplot.min.js"></script>
+<script type="text/javascript" src="<?php echo $this->mediaUrl; ?>jquery/jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
+<script type="text/javascript" src="<?php echo $this->mediaUrl; ?>jquery/jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js"></script>
+<script type="text/javascript" src="<?php echo $this->mediaUrl; ?>jquery/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
+<script type="text/javascript" src="<?php echo $this->mediaUrl; ?>jquery/jqplot/plugins/jqplot.highlighter.min.js"></script>
+<script type="text/javascript" src="<?php echo $this->mediaUrl; ?>jquery/jqplot/plugins/jqplot.enhancedLegendRenderer.min.js"></script>
+<script type="text/javascript" src="<?php echo $this->mediaUrl; ?>jquery/jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js"></script>
+
+<style>
+    svg {
+        width: 100% !important;
+    }
+</style>
+
+<script>
+    $(document).ready(function() {
+        $('#pluginlist').dataTable({
+            "sPaginationType": "full_numbers",
+            "aoColumns": [null, null],
+            "bStateSave": true
+        });
+        $('#packagelist').dataTable({
+            "sPaginationType": "full_numbers",
+            "aoColumns": [null, null],
+            "bStateSave": true
+        });
+        $('#statslist').dataTable({
+            "sPaginationType": "full_numbers",
+            "aoColumns": [null, null],
+            "bStateSave": true
+        });
+        
+        
+        
+        <?php
+        if($this->entity->getValueByKey("listtoolStats")){
+            $ListtoolChart = new \LwPortalsList\Views\ListtoolChart();
+            $ListtoolChart->setData($this->entity->getValueByKey("listtoolStats"));
+            echo $ListtoolChart->render();
+        }
+        
+        if($this->entity->getValueByKey("piwik_id") > 0){
+            $PiwikChart = new \LwPortalsList\Views\PiwikChart();
+            $PiwikChart->setData($this->piwikPhPVisitArray);
+            echo $PiwikChart->render();
+        }            
+        ?>          
+
+        $('ul.nav a').on('shown.bs.tab', function (e) {
+            var types = $(this).attr("data-identifier");
+            var typesArray = types.split(",");
+            $.each(typesArray, function (key, value) {
+                if(value === "listtoolChart"){
+                    plot1.replot();
+                }
+                if(value === "piwikChart"){
+                    plot2.replot();
+                }
+            });
+        });
+        
+        
+        $(window).bind("resize", function() {
+            elementResize();
+        });
+        function elementResize() {
+            $("div.chartContainer").width($("div.panel-body").width() - 170);
+            plot1.replot();
+            plot2.replot();
+        }
+        elementResize();
+    });
+
+</script>
+
+<h1><?php echo $this->entity->getValueByKey("name"); ?></h1>
+<hr>
+
+<a onclick="window.history.back();" style="cursor:pointer;" title="zur&uuml;ck"><span class="glyphicon glyphicon-arrow-left"></span></a>&nbsp;&nbsp;
+<?php if ($this->isAdmin): ?>
+    <?php
+        if(isset($this->pageIndexes["md5"])) { $indexMd5 = $this->pageIndexes["md5"]; } else { $indexMd5 = 0; }
+        if(isset($this->pageIndexes["collector"])) { $indexCollector = $this->pageIndexes["collector"]; } else { $indexCollector = 0; }
+        if(isset($this->pageIndexes["tableSearch"])) { $indexTableSearch = $this->pageIndexes["tableSearch"]; } else { $indexTableSearch = 0; }
+    ?>
+    <a href="<?php echo \lw_page::getInstance($indexMd5)->getUrl(array("portalsPlugin" =>"LwPortalsMd5", "cmd" => "showMd5CheckForm", "id" => $this->entity->getId())); ?>" title="Md5 Abgleich f&uuml;r dieses Portal">Md5</a> &nbsp;&nbsp;
+    <a href="<?php echo \lw_page::getInstance($indexCollector)->getUrl(array("portalsPlugin" =>"LwPortalsCollector", "id" => $this->entity->getId())); ?>" title="Systeminformationen f&uuml;r dieses Portal aktualisieren"><span class="glyphicon glyphicon-stats"></span></a> &nbsp;&nbsp;
+    <a href="<?php echo \lw_page::getInstance($indexTableSearch)->getUrl(array("portalsPlugin" =>"LwPortalsTableSearch", "id" => $this->entity->getId())); ?>" title="Tabellen durchsuchen"><span class="glyphicon glyphicon-search"></span></a> &nbsp;&nbsp;
+    <a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsList", "cmd" => "showEditForm", "id" => $this->entity->getId())); ?>" title="Dieses Portal bearbeiten"><span class="glyphicon glyphicon-pencil"></span></a>
+<?php endif; ?>
+    
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>&nbsp;</th>
+            <th>&nbsp;</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Name</td>
+            <td><?php echo $this->entity->getValueByKey("name"); ?></td>
+        </tr>
+        <tr>
+            <td>Server</td>
+            <td><?php echo $this->entity->getValueByKey("server"); ?></td>
+        </tr>
+        <tr>
+            <td>Pfad</td>
+            <td><?php echo $this->entity->getValueByKey("path"); ?></td>
+        </tr>
+        <tr>
+            <td>Url</td>
+            <td><a href="<?php echo $this->entity->getValueByKey("url"); ?>" target="_blank"><?php echo $this->entity->getValueByKey("url"); ?></a></td>
+        </tr>
+        <tr>
+            <td>Piwik Id</td>
+            <td><?php echo $this->entity->getValueByKey("piwik_id"); ?> ( <?php echo $this->entity->getValueByKey("piwik_name") ?> ) 
+                <?php if ($this->isAdmin): ?>
+                    <?php $piwik_usage = $this->entity->getValueByKey("piwik_usage"); if (count($piwik_usage) > 0) : echo "Diese Piwik-Id wird ebenfalls bei folgenden Portalen verwendet: "; foreach($piwik_usage as $use):?><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsList", "cmd" => "showEditForm", "id" => $use["id"])); ?>"><?php echo $use["name"]; ?></a>&nbsp;<?php endforeach; ?><?php endif;?>
+                <?php else: ?>
+                    <?php $piwik_usage = $this->entity->getValueByKey("piwik_usage"); if (count($piwik_usage) > 0) : echo "Diese Piwik-Id wird ebenfalls bei folgenden Portalen verwendet: "; foreach($piwik_usage as $use):?><b><?php echo $use["name"]; ?></b>&nbsp;<?php endforeach; ?><?php endif;?>
+                <?php endif; ?>
+            </td>
+        </tr>
+        <tr>
+            <td>Plugins</td>
+            <td><?php if($this->entity->getValueByKey("plugins") == ""){ echo "0"; } else { $pluginlist = $this->entity->getValueByKey("plugins"); echo count($pluginlist); } ?></td>
+        </tr>
+        <tr>
+            <td>Packages</td>
+            <td><?php if($this->entity->getValueByKey("packages") == ""){ echo "0"; } else { $packagelist = $this->entity->getValueByKey("packages"); echo count($packagelist); } ?></td>
+        </tr>
+        <?php if($this->entity->getValueByKey("scan_exclude") == 1): ?>
+            <tr>
+                <td>&nbsp;</td>
+                <td><?php if($this->entity->getValueByKey("scan_exclude") == 1){ echo "Dieses Portal ist von dem SystemInfo-Scan, aller Portale, ausgeschlossen"; } ?></td>
+            </tr>
+        <?php endif; ?>
+    </tbody>
+</table>
+
+    
+
+<!-- /.panel-heading -->
+<div class="panel-body">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs">
+        <?php if($this->entity->getValueByKey("piwik_id") > 0) :?>
+            <li class="active"><a href="#PiwikTab" data-toggle="tab" data-identifier="piwikChart">Piwik</a></li>
+            <li><a href="#ServerStatsTab" data-toggle="tab">Server</a></li>
+        <?php else: ?>
+            <li class="active"><a href="#ServerStatsTab" data-toggle="tab">Server</a></li>
+        <?php endif; ?>
+        <li><a href="#PluginsTab" data-toggle="tab">Plugins</a></li>
+        <li><a href="#PackagesTab" data-toggle="tab">Packages</a></li>
+        <?php if($this->entity->getValueByKey("listtoolStats")): ?>
+            <li><a href="#ListtoolTab" data-toggle="tab" data-identifier="listtoolChart">Listtool</a></li>
+        <?php endif; ?>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <?php if($this->entity->getValueByKey("piwik_id") > 0) :?>
+            <div class="tab-pane fade in active" id="PiwikTab">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <b>Seitenbesuche der letzten 30 Tage</b>
+                    </div>
+                    <div class="panel-body">
+                        <div style="margin-right:150px;" id="piwik-chart" class="chartContainer"></div>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+        <div class="tab-pane fade <?php if($this->entity->getValueByKey("piwik_id") < 1) :?>in active<?php endif; ?>" id="ServerStatsTab">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <b>Server-Statistik</b>
+                </div>
+                <div class="panel-body">
+                    <?php if(!$this->entity->getValueByKey("stats")): ?>
+                        <p>keine Server-Statistik vorhanden</p>
+                    <?php else: ?>
+                        <table id="statslist" class="table table-striped table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Tabellenname</th>
+                                <th>Anzahl</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php $stats = $this->entity->getValueByKey("stats"); ?>
+                            <?php foreach($stats as $key => $value): ?>        
+                                <tr>
+                                    <td><?php echo $key; ?></td>
+                                    <td><?php echo $value; ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="PluginsTab">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <b>Plugins</b>
+                </div>
+                <div class="panel-body">
+                    <?php if ($this->entity->getValueByKey("plugins") == ""): ?>
+                        <p>keine Plugin-Liste vorhanden</p>
+                    <?php else: ?>
+                        <?php if(isset($this->pageIndexes["plugins"])) { $indexPlugins = $this->pageIndexes["plugins"]; } else { $indexPlugins = 0; } ?>
+                        <?php $pluginlist = $this->entity->getValueByKey("plugins"); ?>
+                        <table id="pluginlist" class="table table-striped table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Anzahl gefundener Installationen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($pluginlist as $id => $plugin): ?>
+                                    <tr>
+                                        <td><a style="display: block;" href="<?php echo \lw_page::getInstance($indexPlugins)->getUrl(array("portalsPlugin" => "LwPortalsPlugins", "cmd" => "showDetail", "id" => $plugin["id"])); ?>"><?php echo $plugin["name"]; ?></a></td>
+                                        <td><?php echo $plugin["installs"]; ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="PackagesTab">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <b>Packages</b>
+                </div>
+                <div class="panel-body">
+                    <?php if ($this->entity->getValueByKey("packages") == ""): ?>
+                        <p>keine Package-Liste vorhanden</p>
+                    <?php else: ?>
+                        <?php if(isset($this->pageIndexes["packages"])) { $indexPackages = $this->pageIndexes["packages"]; } else { $indexPackages = 0; } ?>
+                        <?php $packages = $this->entity->getValueByKey("packages"); ?>
+                        <table id="packagelist" class="table table-striped table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Anzahl gefundener Installationen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($packages as $id => $package): ?>
+                                    <tr>
+                                        <td><a style="display: block;" href="<?php echo \lw_page::getInstance($indexPackages)->getUrl(array("portalsPlugin" => "LwPortalsPackages", "cmd" => "showDetail", "id" => $package["id"])); ?>"><?php echo $package["name"]; ?></a></td>
+                                        <td><?php echo $package["installs"]; ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+        <?php if($this->entity->getValueByKey("listtoolStats")): ?>
+            <div class="tab-pane fade" id="ListtoolTab">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <b>Listool-Statistik</b>
+                    </div>
+                    <div class="panel-body">
+                        <div id="listtool-chart" class="chartContainer"></div>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>   

@@ -1,0 +1,105 @@
+<?php if ($this->formtype == "edit"): ?>
+    <h1>Portal "<?php echo $this->entity->getValueByKey("name"); ?>" bearbeiten</h1>
+<?php else: ?>
+    <h1>Neues Portal anlegen</h1>
+<?php endif; ?>
+<hr>
+<a onclick="window.history.back();" style="cursor:pointer;" title="zur&uuml;ck"><span class="glyphicon glyphicon-arrow-left"></span></a>
+
+<form id="portal_form" class="form-horizontal" role="form" action="<?php echo $this->actionUrl; ?>" method="post">
+
+    <div class="form-group <?php if(isset($this->errors["name"])): ?>has-error<?php endif; ?>">
+        <label for="portal_name" class="col-sm-2 control-label">Name</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control" id="portal_name" name="name" value="<?php echo $this->entity->getValueByKey("name"); ?>">
+        </div>
+        <?php if(isset($this->errors["name"])): ?>
+            <div class="col-sm-offset-3 error">
+                <?php if($this->errors["name"][1]): ?><span class="help-block">Pflichtfeld</span><?php endif; ?>
+                <?php if($this->errors["name"][2]): ?><span class="help-block">Max. 255 Zeichen</span><?php endif; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <div class="form-group <?php if(isset($this->errors["server"])): ?>has-error<?php endif; ?>">
+        <label for="portal_server" class="col-sm-2 control-label">Server</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control" id="portal_server" name="server" value="<?php echo $this->entity->getValueByKey("server"); ?>">
+        </div>
+        <?php if(isset($this->errors["server"])): ?>
+            <div class="col-sm-offset-3 error">
+                <?php if($this->errors["server"][1]): ?><span class="help-block">Pflichtfeld</span><?php endif; ?>
+                <?php if($this->errors["server"][2]): ?><span class="help-block">Max. 255 Zeichen</span><?php endif; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <div class="form-group <?php if(isset($this->errors["path"])): ?>has-error<?php endif; ?>">
+        <label for="portal_path" class="col-sm-2 control-label">Pfad</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control" id="portal_path" name="path" value="<?php echo $this->entity->getValueByKey("path"); ?>">
+        </div>
+        <?php if(isset($this->errors["path"])): ?>
+            <div class="col-sm-offset-3 error">
+                <?php if($this->errors["path"][1]): ?><span class="help-block">Pflichtfeld</span><?php endif; ?>
+                <?php if($this->errors["path"][2]): ?><span class="help-block">Max. 255 Zeichen</span><?php endif; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <div class="form-group <?php if(isset($this->errors["url"])): ?>has-error<?php endif; ?>">
+        <label for="portal_url" class="col-sm-2 control-label">Url</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control" id="portal_url" name="url" value="<?php echo $this->entity->getValueByKey("url"); ?>">
+        </div>
+        <?php if(isset($this->errors["url"])): ?>
+            <div class="col-sm-offset-3 error">
+                <?php if($this->errors["url"][1]): ?><span class="help-block">Pflichtfeld</span><?php endif; ?>
+                <?php if($this->errors["url"][2]): ?><span class="help-block">Max. 255 Zeichen</span><?php endif; ?>
+                <?php if($this->errors["url"][4]): ?><span class="help-block">Keine korrekte Url-Syntax ( eventuell fehlt "http://" )</span><?php endif; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <div class="form-group <?php if(isset($this->errors["piwik_id"])): ?>has-error<?php endif; ?>">
+        <label for="portal_piwik_id" class="col-sm-2 control-label">Piwik Id</label>
+        <div class="col-sm-10">
+            <select class="form-control" id="portal_piwik_id" name="piwik_id">
+                <option value="0">nicht zugewiesen</option>
+                <?php foreach($this->piwikSites as $site): ?>
+                <option value="<?php echo $site->getId(); ?>" <?php if($this->entity->getValueByKey("piwik_id") == $site->getId()): ?>selected="selected"<?php endif; ?>><?php echo $site->getValueByKey("name") ?></option>
+                <?php endforeach; ?>
+            </select>
+            <?php $piwik_usage = $this->entity->getValueByKey("piwik_usage"); if (count($piwik_usage) > 0) : echo "Diese Piwik-Id wird ebenfalls bei folgenden Portalen verwendet: "; foreach($piwik_usage as $use):?><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsList", "cmd" => "showEditForm", "id" => $use["id"])); ?>"><?php echo $use["name"]; ?></a>&nbsp;<?php endforeach; ?><?php endif;?>
+        </div>
+        <?php if(isset($this->errors["piwik_id"])): ?>
+            <div class="col-sm-offset-3 error">
+                <?php if($this->errors["piwik_id"][1]): ?><span class="help-block">Pflichtfeld</span><?php endif; ?>
+                <?php if($this->errors["piwik_id"][3]): ?><span class="help-block">Nur Zahlen erlaubt</span><?php endif; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+    
+    <div class="form-group <?php if(isset($this->errors["scan_exclude"])): ?>has-error<?php endif; ?>">
+        <label class="col-sm-2 control-label">&nbsp;</label>
+        <div class="col-sm-10">
+            <div class="checkbox">
+              <label>
+                  <input name="scan_exclude" type="checkbox" <?php if($this->entity->getValueByKey("scan_exclude") > 0): ?>checked="checked"<?php endif; ?> value="1">Dieses Portal von der Gesamt-Aktualisierung ausschlie&szlig;en
+              </label>
+            </div>
+        </div>
+        <?php if(isset($this->errors["scan_exclude"])): ?>
+            <div class="col-sm-offset-3 error">
+                <?php if($this->errors["scan_exclude"][4]): ?><span class="help-block">Nur Zahlen erlaubt</span><?php endif; ?>
+                <?php if($this->errors["scan_exclude"][5]): ?><span class="help-block">Es sind nur die Zahlen 0 und 1 erlaubt</span><?php endif; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="btn btn-default">speichern</button>
+        </div>
+    </div>
+</form>

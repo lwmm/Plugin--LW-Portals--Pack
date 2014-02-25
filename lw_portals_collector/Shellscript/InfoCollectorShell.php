@@ -45,7 +45,7 @@ if ($config["lwdb"]["type"] == "mysql" || $config["lwdb"]["type"] == "mysqli") {
     $db->connect();
 }
 
-$db->setStatement("SELECT * FROM t:lw_info_portals WHERE scan_exclude = 0 ORDER BY name ");
+$db->setStatement("SELECT * FROM t:lw_info_portals WHERE scan_exclude = 0 OR scan_exclude IS NULL ORDER BY name ");
 $result = $db->pselect();
 
 $collection = array();

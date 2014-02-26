@@ -65,6 +65,7 @@ class Frontend
             $view->setTablesCollection($tablesCollection);
             $view->setResults($results);
             $view->setPost($post);
+            $view->setPageIndexes($this->pageIndexes);
             return $view->render();
         }
     }

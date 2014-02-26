@@ -3,7 +3,12 @@
 <?php else: ?>
     <h1>Md5 - Alle Portale</h1>
 <?php endif; ?>
-<hr>    
+<hr>   
+
+<?php if($this->entity): ?>
+    <?php if(isset($this->pageIndexes["portals"])) { $indexPortals = $this->pageIndexes["portals"]; } else { $indexPortals = 0; } ?>
+    <a href="<?php echo \lw_page::getInstance($indexPortals)->getUrl(array("portalsPlugin" =>"LwPortalsList", "cmd" => "showDetail", "id" => $this->entity->getId())); ?>" title="zur&uuml;ck"><span class="glyphicon glyphicon-arrow-left"></span></a>
+<?php endif; ?>    
 
 <form id="md5check_form" class="form-horizontal" role="form" action="<?php echo $this->actionUrl; ?>" method="POST" ENCTYPE="multipart/form-data">
 

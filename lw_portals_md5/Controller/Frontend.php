@@ -60,6 +60,7 @@ class Frontend
             }
             $view->setResults($results);
             $view->setPost($post);
+            $view->setPageIndexes($this->pageIndexes);
             return $view->render();
         }
     }

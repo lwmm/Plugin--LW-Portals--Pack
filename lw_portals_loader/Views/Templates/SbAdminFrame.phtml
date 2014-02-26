@@ -73,6 +73,7 @@
                         <li <?php if($this->portalsPlugin == "LwPortalsMd5"): ?>class="selected"<?php endif; ?>><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsMd5", "cmd" => "showMd5CheckForm")); ?>"><span class="glyphicon glyphicon-retweet"></span> Md5 Abgleich</a></li>
                         <li <?php if($this->portalsPlugin == "LwPortalsTableSearch"): ?>class="selected"<?php endif; ?>><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsTableSearch", "cmd" => "showTableSearchForm")); ?>"><span class="glyphicon glyphicon-search"></span> Tabellensuche</a></li>
                         <li><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsCollector")); ?>"><span class="glyphicon glyphicon-stats"></span> Alle Portalstatistiken erneuern</a></li>
+                        <li <?php if($this->portalsPlugin == "LwPortalsConfig"): ?>class="selected"<?php endif; ?>><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsConfig", "cmd" => "showConfigForm")); ?>"><span class="glyphicon glyphicon-cog"></span> Konfiguration</a></li>
                     <?php endif; ?>
                     
                 </ul>

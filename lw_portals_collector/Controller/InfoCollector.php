@@ -42,6 +42,7 @@ class InfoCollector
                 }
             }
         }
+        $this->cleanModuels();
         return true;
     }
 
@@ -63,6 +64,19 @@ class InfoCollector
                 $ModuleClass = new $class($this->db);
                 $ModuleClass->execute($entity->getId(), $jsonDecodedArray);
             }
+        }
+    }
+
+    private function cleanModuels()
+    {
+        $this->db->setStatement("SELECT * FROM t:lw_info_modules m WHERE m.id NOT IN (SELECT pm.mid FROM t:lw_info_portals_modules pm) ");
+        $result = $this->db->pselect();
+
+        foreach ($result as $module) {
+            $this->db->setStatement("DELETE FROM t:lw_info_modules WHERE id = :id ");
+            $this->db->bindParameter("id", "i", $module["id"]);
+
+            $this->db->pdbquery();
         }
     }
 

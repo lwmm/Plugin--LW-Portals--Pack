@@ -14,11 +14,14 @@ packages=??         ----        "       lw_portals_packages         "
 
 
 "benötigte" Parameter je Plugin:
-lw_portals_loader   => ( "admin" => ? )
-lw_portals_list     => ( "admin" => ?, "md5" => ??, "collector" => ??, "plugins" => ??, "packages" => ?? )
-lw_portals_plugins  => ( "portals" => ?? )
-lw_portals_packages => ( "portals" => ?? )
-lw_portals_md5      => ( "admin" => ? )
+lw_portals_loader           => ( "admin" => ? )
+lw_portals_list             => ( "admin" => ?, "md5" => ??, "collector" => ??, "plugins" => ??, "packages" => ??, tableSearch => ?? )
+lw_portals_plugins          => ( "portals" => ?? )
+lw_portals_packages         => ( "portals" => ?? )
+lw_portals_md5              => ( "admin" => ?, portals => ?? )
+lw_portals_collector        => ( "admin" => ?, portals => ?? )
+lw_portals_table_search     => ( "admin" => ?, portals => ?? )
+lw_portals_config           => ( "admin" => ? )
 
 
 Wird das lw_portals_loader Plugin verwendet muss nur der "admin"-Parameter übergeben werden.

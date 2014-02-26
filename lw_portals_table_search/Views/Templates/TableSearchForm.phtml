@@ -69,6 +69,11 @@
 <?php endif; ?>
 <hr>    
 
+<?php if($this->entity): ?>
+    <?php if(isset($this->pageIndexes["portals"])) { $indexPortals = $this->pageIndexes["portals"]; } else { $indexPortals = 0; } ?>
+    <a href="<?php echo \lw_page::getInstance($indexPortals)->getUrl(array("portalsPlugin" =>"LwPortalsList", "cmd" => "showDetail", "id" => $this->entity->getId())); ?>" title="zur&uuml;ck"><span class="glyphicon glyphicon-arrow-left"></span></a>
+<?php endif; ?>    
+    
 <form id="md5check_form" class="form-horizontal" role="form" action="<?php echo $this->actionUrl; ?>" method="POST">
     <div class="form-group" class="col-sm-4">
         <label for="tablenames" class="col-sm-2 control-label">Tabelle</label>
@@ -149,7 +154,7 @@
                             <td><?php echo $field ?></td>
                             <?php foreach($extendedFields as $name => $isSet): ?>
                                 <?php if(isset($sr[$name])): ?>
-                                    <td style="font-style: italic;"><?php echo $sr[$name]; ?></td>
+                                    <td style="font-style: italic;"><?php echo htmlentities($sr[$name]); ?></td>
                                 <?php else: ?>
                                     <td>&nbsp;</td>
                                 <?php endif; ?>

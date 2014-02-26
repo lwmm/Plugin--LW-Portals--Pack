@@ -42,6 +42,10 @@ class Autoloader
             $path = $config["plugin_path"]["lw"] . "lw_portals_table_search";
             $filename = str_replace('LwPortalsTableSearch', $path, $className);
         }
+        if (strstr($className, 'LwPortalsConfig')) {
+            $path = $config["plugin_path"]["lw"] . "lw_portals_config";
+            $filename = str_replace('LwPortalsConfig', $path, $className);
+        }
         
         $filename = str_replace('\\', '/', $filename).'.php';
         if (is_file($filename)) {

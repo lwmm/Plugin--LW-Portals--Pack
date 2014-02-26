@@ -26,6 +26,11 @@ class Md5CheckForm
     {
         $this->view->post = $post;
     }
+    
+    public function setPageIndexes($pageIndexes)
+    {
+        $this->view->pageIndexes = $pageIndexes;
+    }
 
     public function render()
     {

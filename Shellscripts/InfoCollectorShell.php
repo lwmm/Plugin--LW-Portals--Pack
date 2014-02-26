@@ -21,12 +21,12 @@ class Autoloader
         }
 
         if (strstr($className, 'lw_')) {
-            $path = $this->config["path"]["framework"]."lw/";
-            $filename = $path . $className.".class";
+            $path = $this->config["path"]["framework"] . "lw/";
+            $filename = $path . $className . ".class";
         }
 
         $filename = str_replace('\\', '/', $filename) . '.php';
-        
+
         if (is_file($filename)) {
             include_once($filename);
         }
@@ -49,7 +49,7 @@ $db->setStatement("SELECT * FROM t:lw_info_portals WHERE scan_exclude = 0 OR sca
 $result = $db->pselect();
 
 $collection = array();
-foreach($result as $portal){
+foreach ($result as $portal) {
     $entity = new \LwPortalsCollector\Model\Portal\Object\Portal($portal["id"]);
     $entity->setValues($portal);
     $collection[] = $entity;

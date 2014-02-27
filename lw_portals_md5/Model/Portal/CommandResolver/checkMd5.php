@@ -16,6 +16,7 @@ class checkMd5
         $this->data = $data;
         $this->respone = \LwPortalsMd5\Services\Response::getInstance();
         $this->request = \lw_registry::getInstance()->getEntry("request");
+        ini_set("max_execution_time", 600); #10 min
     }
 
     public static function getInstance($params = false, $data = false)

@@ -34,7 +34,9 @@ class Md5CheckForm
 
     public function render()
     {
-        $config = \lw_registry::getInstance()->getEntry("config");        
+        $config = \lw_registry::getInstance()->getEntry("config"); 
+        $this->view->mediaUrl = $config["url"]["media"];
+        
         foreach ($config["path"] as $key => $path){
             $arr[] = $key;
         }

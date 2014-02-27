@@ -2,7 +2,7 @@
 
 namespace LwPortalsCollector\Controller;
 
-class InfoCollector
+class InfoCollector extends \LwPortalsCollector\Model\Base\DataHandler\InfoCollectorBase
 {
 
     protected $db;
@@ -13,6 +13,7 @@ class InfoCollector
     {
         $this->db = $db;
         $this->collection = $this->entity = false;
+        ini_set("max_execution_time", 600); #10 min        
     }
 
     public function setCollection($collection)
@@ -35,10 +36,22 @@ class InfoCollector
             $module = str_replace(".php", "", $fileName);
 
             if ($this->entity) {
-                $this->getInfo($this->entity, $module);
+                if ($module == "Listtool") {
+                    if ($this->isPackageLwListoolInstalledByPortalId($this->entity->getId())) {
+                        $this->getInfo($this->entity, $module);
+                    }
+                } else {
+                    $this->getInfo($this->entity, $module);
+                }
             } elseif ($this->collection) {
                 foreach ($this->collection as $entity) {
-                    $this->getInfo($entity, $module);
+                    if ($module == "Listtool") {
+                        if ($this->isPackageLwListoolInstalledByPortalId($entity->getId())) {
+                            $this->getInfo($entity, $module);
+                        }
+                    } else {
+                        $this->getInfo($entity, $module);
+                    }
                 }
             }
         }
@@ -64,19 +77,6 @@ class InfoCollector
                 $ModuleClass = new $class($this->db);
                 $ModuleClass->execute($entity->getId(), $jsonDecodedArray);
             }
-        }
-    }
-
-    private function cleanModuels()
-    {
-        $this->db->setStatement("SELECT * FROM t:lw_info_modules m WHERE m.id NOT IN (SELECT pm.mid FROM t:lw_info_portals_modules pm) ");
-        $result = $this->db->pselect();
-
-        foreach ($result as $module) {
-            $this->db->setStatement("DELETE FROM t:lw_info_modules WHERE id = :id ");
-            $this->db->bindParameter("id", "i", $module["id"]);
-
-            $this->db->pdbquery();
         }
     }
 

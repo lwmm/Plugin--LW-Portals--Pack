@@ -39,6 +39,8 @@ class TableSearchForm
 
     public function render()
     {           
+        $config = \lw_registry::getInstance()->getEntry("config");
+        $this->view->mediaUrl = $config["url"]["media"];
         if($this->view->entity){
             $this->view->actionUrl = \LwPortalsTableSearch\Services\Page::getUrl(array("portalsPlugin" =>"LwPortalsTableSearch", "cmd" => "search", "id" => $this->view->entity->getId()));
         }else{

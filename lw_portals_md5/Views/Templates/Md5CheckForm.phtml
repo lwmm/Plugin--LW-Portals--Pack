@@ -1,3 +1,22 @@
+<script type="text/javascript" src="<?php echo $this->mediaUrl . "modules/spinloader/spin.min.js"; ?>"></script>
+
+<style>    
+    #greyOverlay{
+        display:none;
+        position:absolute;
+        top:0px;
+        left:0px;
+        bottom:0px;
+        right:0px;
+        width:100%;
+        height:100%;
+        z-index: 10;
+        background-color: #fff;
+        opacity: 0.7;
+        filter: Alpha(Opacity=70);
+    }
+</style>
+
 <?php if($this->entity): ?>
     <h1>Md5 - <?php echo $this->entity->getValueByKey("name"); ?></h1>
 <?php else: ?>
@@ -9,7 +28,8 @@
     <?php if(isset($this->pageIndexes["portals"])) { $indexPortals = $this->pageIndexes["portals"]; } else { $indexPortals = 0; } ?>
     <a href="<?php echo \lw_page::getInstance($indexPortals)->getUrl(array("portalsPlugin" =>"LwPortalsList", "cmd" => "showDetail", "id" => $this->entity->getId())); ?>" title="zur&uuml;ck"><span class="glyphicon glyphicon-arrow-left"></span></a>
 <?php endif; ?>    
-
+    
+<div id="greyOverlay">&nbsp;</div> 
 <form id="md5check_form" class="form-horizontal" role="form" action="<?php echo $this->actionUrl; ?>" method="POST" ENCTYPE="multipart/form-data">
 
     <div class="form-group">
@@ -42,7 +62,27 @@
 
     <div class="form-group">
         <div class="col-sm-offset-2 col-sm-10">
-            <button type="submit" class="btn btn-default">pr&uuml;fen</button>
+            <button type="submit" class="btn btn-default" onclick="
+                            $('#greyOverlay').show();
+                            var opts = {
+                                lines: 13, // The number of lines to draw
+                                length: 16, // The length of each line
+                                width: 14, // The line thickness
+                                radius: 25, // The radius of the inner circle
+                                corners: 1, // Corner roundness (0..1)
+                                rotate: 0, // The rotation offset
+                                color: '#2A649D', // #rgb or #rrggbb
+                                speed: 1, // Rounds per second
+                                trail: 44, // Afterglow percentage
+                                shadow: true, // Whether to render a shadow
+                                hwaccel: false, // Whether to use hardware acceleration
+                                className: 'spinner', // The CSS class to assign to the spinner
+                                zIndex: 2e9, // The z-index (defaults to 2000000000)
+                                top: '350', // Top position relative to parent in px
+                                left: 'auto' // Left position relative to parent in px
+                            };
+                            var target = document.getElementById('greyOverlay');
+                            var spinner = new Spinner(opts).spin(target);">pr&uuml;fen</button>
         </div>
     </div>
 </form>

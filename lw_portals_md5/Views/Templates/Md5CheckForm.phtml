@@ -1,5 +1,5 @@
 <script>
-    $(document).ready(function() {  
+    $(document).ready(function() {
         $(window).bind("resize", function() {
             elementResize();
         });
@@ -8,29 +8,31 @@
             $("#progessDialog").css("top", ( ($("#page-wrapper").height() / 4 ) - $("#progessDialog").height() / 2 ) );
         }
         elementResize();
-        
+
         function getPreparedArray()
         {
             var portalArray =  new Object();
             <?php
-            
+
             if ($this->entity){
                 echo "" . PHP_EOL;
                 echo "portalArray['" . $this->entity->getValueByKey("name") . "'] = " . $this->entity->getId() . ";" . PHP_EOL;
                 echo "" . PHP_EOL;
             } else if($this->collection) {
-                
+
                 echo "" . PHP_EOL;
                 foreach($this->collection as $portal){
-                    echo "portalArray['" . $portal->getValueByKey("name") . "'] = " . $portal->getId() . ";" . PHP_EOL;
+                    if($portal->getValueByKey("scan_exclude") < 1 ){
+                        echo "portalArray['" . $portal->getValueByKey("name") . "'] = " . $portal->getId() . ";" . PHP_EOL;
+                    }
                 }
                 echo "" . PHP_EOL;
             }
-            
+
             ?>
             return portalArray;
         }
-        
+
        var data = new FormData();
        $("#inputFile").change(function(){
             data.append('inputFile', this.files[0]);
@@ -38,19 +40,32 @@
 
        $("#submit_btn").click(function(){
             if($("#inputFile").val() !== "" || ($("#filePath").val() !== "" && $("#expectedMd5").val() !== "")){
-                $("#container_tables").hide();    
-                $("#container_tables").html("");    
-                $("#progessDialog").show();    
-                
+                $("#container_tables").hide();
+                $("#container_tables").html("");
+                $("#progessDialog").show();
+
                 if($("#inputFile").val() === ""){
                     data.append('configPath', $("#configPath").val());
                     data.append('path', $("#filePath").val());
                     data.append('expectedMd5', $("#expectedMd5").val());
 
-                }   
+                }
 
                 var portalArray = getPreparedArray();
-                var portalsCount = <?php if($this->entity) { echo 1; } else if($this->collection) { echo count($this->collection); } ?>;
+                var portalsCount = <?php
+                    if($this->entity) {
+                        echo 1;
+
+                    } else if($this->collection) {
+                        $i = 0;
+                        foreach($this->collection as $portal){
+                            if($portal->getValueByKey("scan_exclude") < 1 ){
+                                $i++;
+
+                            }
+                        } echo $i;
+                    }
+                            ?>;
                 var i = 0;
                 var percent = 0;
                 $.each(portalArray, function(portal, portal_id) {
@@ -62,58 +77,58 @@
                          processData: false,
                          contentType: false
                          }).done(function(response){
-                         //successful
-                         //alert(response);
-                         buildTable(response);
+                             i++;
+                             percent = ((i/portalsCount) * 100).toFixed(2);
+                             $("#progessDialog div.progress-bar").css("width", percent + "%");
+                             $("#progessDialog div.progress-bar span").html("<nobr>" + portal +" ( " + percent +"% )</nobr>");
+                             if( i === portalsCount) {
+                                $("#progessDialog div.panel-heading span").show();
+                                $("#progessDialog #show_results_container").show();
+                             }
+                             buildTable(response);
                      });
-                     i++;
-                     percent = ((i/portalsCount) * 100).toFixed(2);
-                     $("#progessDialog div.progress-bar").css("width", percent + "%");
-                     $("#progessDialog div.progress-bar span").html("<nobr>" + portal +" ( " + percent +"% )</nobr>");
                 });
-                
-                $("#progessDialog div.panel-heading span").show();    
-                $("#progessDialog #show_results_container").show();    
             }
        });
-       
+
        function buildTable(jsonResponse)
-       {                      
+       {
+           var portalArray = getPreparedArray();
            $.each(jsonResponse, function(portal, results) {
-               $("#hiddenElements div.portalTableContainer").attr("id","container_" + portal).clone().appendTo($("#container_tables"));
-               $("#hiddenElements div.headline h3").html(portal).clone().appendTo($("#container_tables div#container_" + portal));
-               $("#hiddenElements div.table_frame table").clone().appendTo($("#container_tables div#container_" + portal));
+               $("#hiddenElements div.portalTableContainer").attr("id","container_" + portalArray[portal]).clone().appendTo($("#container_tables"));
+               $("#hiddenElements div.headline h3").html(portal).clone().appendTo($("#container_tables div#container_" + portalArray[portal]));
+               $("#hiddenElements div.table_frame table").clone().appendTo($("#container_tables div#container_" + portalArray[portal]));
                $.each(results, function(nr, result) {
                    $("#hiddenElements div.table_row tr td.completePath").html(result.completePath);
                    $("#hiddenElements div.table_row tr td.expectedMd5").html(result.expectedMd5);
-                   
+
                    if(result.recievedMd5 === false) {
                        $("#hiddenElements div.table_row tr td.recievedMd5").html("Datei existiert nicht!");
                    } else {
                        $("#hiddenElements div.table_row tr td.recievedMd5").html(result.recievedMd5);
                    }
-                   
+
                    if(result.recievedMd5 === result.expectedMd5) {
                        $("#hiddenElements div.table_row tr").css("color","green");
                    } else {
                       $("#hiddenElements div.table_row tr").css("color","darkred");
                    }
-                   
-                   $("#hiddenElements div.table_row tr").clone().appendTo($("#container_tables div#container_" + portal + " > table > tbody"));
+
+                   $("#hiddenElements div.table_row tr").clone().appendTo($("#container_tables div#container_" + portalArray[portal] + " > table > tbody"));
                });
-               
+
             });
        }
-       
+
        $("#progessDialog div.panel-heading span").click(function(){
-          $("#container_tables").show(); 
+          $("#container_tables").show();
           $("#progessDialog").hide();
        });
        $("#progessDialog #show_results").click(function(){
-          $("#container_tables").show(); 
+          $("#container_tables").show();
           $("#progessDialog").hide();
        });
-        
+
     });
 </script>
 <style>
@@ -130,27 +145,27 @@
         cursor: pointer;
         display: none;
     }
-    
+
     .progress-bar span{
         font-weight: bold;
         text-shadow: #333 2px 2px 1px;
     }
-    
+
     #show_results_container button{float: right;}
     #show_results_container{display: none;}
-</style>   
-    
+</style>
+
 <?php if($this->entity): ?>
     <h1>Md5 - <?php echo $this->entity->getValueByKey("name"); ?></h1>
 <?php else: ?>
     <h1>Md5 - Alle Portale</h1>
 <?php endif; ?>
-<hr>   
+<hr>
 
 <?php if($this->entity): ?>
     <?php if(isset($this->pageIndexes["portals"])) { $indexPortals = $this->pageIndexes["portals"]; } else { $indexPortals = 0; } ?>
     <a href="<?php echo \lw_page::getInstance($indexPortals)->getUrl(array("portalsPlugin" =>"LwPortalsList", "cmd" => "showDetail", "id" => $this->entity->getId())); ?>" title="zur&uuml;ck"><span class="glyphicon glyphicon-arrow-left"></span></a>
-<?php endif; ?>    
+<?php endif; ?>
 
 <form id="md5check_form" class="form-horizontal" role="form" method="POST" ENCTYPE="multipart/form-data">
 
@@ -167,7 +182,7 @@
             <input id="filePath" class="form-control" type="text" name="path" value="<?php echo $this->post["path"]; ?>"/>
         </div>
     </div>
-    
+
     <div class="form-group">
         <label for="expectedMd5" class="col-sm-2 control-label">Md5 ( erwartet )</label>
         <div class="col-sm-10">
@@ -188,10 +203,10 @@
         </div>
     </div>
 </form>
-    
-<div id="container_tables"></div>    
-    
-<?php if($this->results): ?>    
+
+<div id="container_tables"></div>
+
+<?php if($this->results): ?>
     <?php if($this->entity): ?>
         <table class="table table-striped">
             <thead>
@@ -239,7 +254,7 @@
 <div id="hiddenElements">
     <div class="portalTableContainer"></div>
     <div class="headline"><h3>Test</h3></div>
-    <div class="table_frame">        
+    <div class="table_frame">
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -259,13 +274,13 @@
                     <td class="completePath"></td>
                     <td class="expectedMd5"></td>
                     <td class="recievedMd5"></td>
-                </tr>            
+                </tr>
             </tbody>
         </table>
     </div>
-</div>      
-            
-            
+</div>
+
+
 <div id="progessDialog" class="panel panel-info">
     <div class="panel-heading"><b>Systeme werden abgefragt ...</b><span class="glyphicon glyphicon-remove"></span></div>
     <div class="panel-body">

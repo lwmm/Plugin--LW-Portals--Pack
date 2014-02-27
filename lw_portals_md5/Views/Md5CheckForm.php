@@ -31,6 +31,11 @@ class Md5CheckForm
     {
         $this->view->pageIndexes = $pageIndexes;
     }
+    
+    public function setCollection($collection)
+    {
+        $this->view->collection = $collection;
+    }
 
     public function render()
     {

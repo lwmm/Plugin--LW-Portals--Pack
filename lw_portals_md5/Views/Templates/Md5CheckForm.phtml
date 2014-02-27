@@ -1,23 +1,145 @@
-<?php if(isset($this->pageIndexes)): ?>
-    <script type="text/javascript" src="<?php echo $this->mediaUrl . "modules/spinloader/spin.min.js"; ?>"></script>
-
-    <style>    
-        #greyOverlay{
-            display:none;
-            position:absolute;
-            top:0px;
-            left:0px;
-            bottom:0px;
-            right:0px;
-            width:100%;
-            height:100%;
-            z-index: 10;
-            background-color: #fff;
-            opacity: 0.7;
-            filter: Alpha(Opacity=70);
+<script>
+    $(document).ready(function() {  
+        $(window).bind("resize", function() {
+            elementResize();
+        });
+        function elementResize() {
+            $("#progessDialog").css("left", ( ($("#page-wrapper").width() / 2 ) - $("#progessDialog").width() / 2 ) );
+            $("#progessDialog").css("top", ( ($("#page-wrapper").height() / 4 ) - $("#progessDialog").height() / 2 ) );
         }
-    </style>
-<?php endif; ?>
+        elementResize();
+        
+        function getPreparedArray()
+        {
+            var portalArray =  new Object();
+            <?php
+            
+            if ($this->entity){
+                echo "" . PHP_EOL;
+                echo "portalArray['" . $this->entity->getValueByKey("name") . "'] = " . $this->entity->getId() . ";" . PHP_EOL;
+                echo "" . PHP_EOL;
+            } else if($this->collection) {
+                
+                echo "" . PHP_EOL;
+                foreach($this->collection as $portal){
+                    echo "portalArray['" . $portal->getValueByKey("name") . "'] = " . $portal->getId() . ";" . PHP_EOL;
+                }
+                echo "" . PHP_EOL;
+            }
+            
+            ?>
+            return portalArray;
+        }
+        
+       var data = new FormData();
+       $("#inputFile").change(function(){
+            data.append('inputFile', this.files[0]);
+       });
+
+       $("#submit_btn").click(function(){
+            if($("#inputFile").val() !== "" || ($("#filePath").val() !== "" && $("#expectedMd5").val() !== "")){
+                $("#container_tables").hide();    
+                $("#container_tables").html("");    
+                $("#progessDialog").show();    
+                
+                if($("#inputFile").val() === ""){
+                    data.append('configPath', $("#configPath").val());
+                    data.append('path', $("#filePath").val());
+                    data.append('expectedMd5', $("#expectedMd5").val());
+
+                }   
+
+                var portalArray = getPreparedArray();
+                var portalsCount = <?php if($this->entity) { echo 1; } else if($this->collection) { echo count($this->collection); } ?>;
+                var i = 0;
+                var percent = 0;
+                $.each(portalArray, function(portal, portal_id) {
+                    $.ajax({
+                         url: "<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsMd5", "cmd" => "checkMd5", "ajax" => 1)); ?>&id=" + portal_id,
+                         data: data,
+                         type: "POST",
+                         dataType: "json",
+                         processData: false,
+                         contentType: false
+                         }).done(function(response){
+                         //successful
+                         //alert(response);
+                         buildTable(response);
+                     });
+                     i++;
+                     percent = ((i/portalsCount) * 100).toFixed(2);
+                     $("#progessDialog div.progress-bar").css("width", percent + "%");
+                     $("#progessDialog div.progress-bar span").html("<nobr>" + portal +" ( " + percent +"% )</nobr>");
+                });
+                
+                $("#progessDialog div.panel-heading span").show();    
+                $("#progessDialog #show_results_container").show();    
+            }
+       });
+       
+       function buildTable(jsonResponse)
+       {                      
+           $.each(jsonResponse, function(portal, results) {
+               $("#hiddenElements div.portalTableContainer").attr("id","container_" + portal).clone().appendTo($("#container_tables"));
+               $("#hiddenElements div.headline h3").html(portal).clone().appendTo($("#container_tables div#container_" + portal));
+               $("#hiddenElements div.table_frame table").clone().appendTo($("#container_tables div#container_" + portal));
+               $.each(results, function(nr, result) {
+                   $("#hiddenElements div.table_row tr td.completePath").html(result.completePath);
+                   $("#hiddenElements div.table_row tr td.expectedMd5").html(result.expectedMd5);
+                   
+                   if(result.recievedMd5 === false) {
+                       $("#hiddenElements div.table_row tr td.recievedMd5").html("Datei existiert nicht!");
+                   } else {
+                       $("#hiddenElements div.table_row tr td.recievedMd5").html(result.recievedMd5);
+                   }
+                   
+                   if(result.recievedMd5 === result.expectedMd5) {
+                       $("#hiddenElements div.table_row tr").css("color","green");
+                   } else {
+                      $("#hiddenElements div.table_row tr").css("color","darkred");
+                   }
+                   
+                   $("#hiddenElements div.table_row tr").clone().appendTo($("#container_tables div#container_" + portal + " > table > tbody"));
+               });
+               
+            });
+       }
+       
+       $("#progessDialog div.panel-heading span").click(function(){
+          $("#container_tables").show(); 
+          $("#progessDialog").hide();
+       });
+       $("#progessDialog #show_results").click(function(){
+          $("#container_tables").show(); 
+          $("#progessDialog").hide();
+       });
+        
+    });
+</script>
+<style>
+    #container_tables, #hiddenElements{display: none;}
+    #progessDialog{
+        position: absolute;
+        top: 100px;
+        left: 200px;
+        width: 600px;
+        display: none;
+    }
+    #progessDialog div.panel-heading span{
+        float: right;
+        cursor: pointer;
+        display: none;
+    }
+    
+    .progress-bar span{
+        font-weight: bold;
+        text-shadow: #333 2px 2px 1px;
+    }
+    
+    #show_results_container button{float: right;}
+    #show_results_container{display: none;}
+</style>   
+    
 <?php if($this->entity): ?>
     <h1>Md5 - <?php echo $this->entity->getValueByKey("name"); ?></h1>
 <?php else: ?>
@@ -29,10 +151,8 @@
     <?php if(isset($this->pageIndexes["portals"])) { $indexPortals = $this->pageIndexes["portals"]; } else { $indexPortals = 0; } ?>
     <a href="<?php echo \lw_page::getInstance($indexPortals)->getUrl(array("portalsPlugin" =>"LwPortalsList", "cmd" => "showDetail", "id" => $this->entity->getId())); ?>" title="zur&uuml;ck"><span class="glyphicon glyphicon-arrow-left"></span></a>
 <?php endif; ?>    
-<?php if(isset($this->pageIndexes)): ?>
-    <div id="greyOverlay">&nbsp;</div> 
-<?php endif; ?>
-<form id="md5check_form" class="form-horizontal" role="form" action="<?php echo $this->actionUrl; ?>" method="POST" ENCTYPE="multipart/form-data">
+
+<form id="md5check_form" class="form-horizontal" role="form" method="POST" ENCTYPE="multipart/form-data">
 
     <div class="form-group">
         <label class="col-sm-2 control-label">Datei Pfad</label>
@@ -64,30 +184,12 @@
 
     <div class="form-group">
         <div class="col-sm-offset-2 col-sm-10">
-            <button type="submit" class="btn btn-default" onclick="
-                            $('#greyOverlay').show();
-                            var opts = {
-                                lines: 13, // The number of lines to draw
-                                length: 16, // The length of each line
-                                width: 14, // The line thickness
-                                radius: 25, // The radius of the inner circle
-                                corners: 1, // Corner roundness (0..1)
-                                rotate: 0, // The rotation offset
-                                color: '#2A649D', // #rgb or #rrggbb
-                                speed: 1, // Rounds per second
-                                trail: 44, // Afterglow percentage
-                                shadow: true, // Whether to render a shadow
-                                hwaccel: false, // Whether to use hardware acceleration
-                                className: 'spinner', // The CSS class to assign to the spinner
-                                zIndex: 2e9, // The z-index (defaults to 2000000000)
-                                top: '350', // Top position relative to parent in px
-                                left: 'auto' // Left position relative to parent in px
-                            };
-                            var target = document.getElementById('greyOverlay');
-                            var spinner = new Spinner(opts).spin(target);">pr&uuml;fen</button>
+            <input type="button" id="submit_btn" class="btn btn-default" value="pr&uuml;fen">
         </div>
     </div>
 </form>
+    
+<div id="container_tables"></div>    
     
 <?php if($this->results): ?>    
     <?php if($this->entity): ?>
@@ -133,3 +235,45 @@
         <?php endforeach; ?>
     <?php endif; ?>
 <?php endif; ?>
+
+<div id="hiddenElements">
+    <div class="portalTableContainer"></div>
+    <div class="headline"><h3>Test</h3></div>
+    <div class="table_frame">        
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Pfad</th>
+                    <th>Erwarteter Md5-Wert</th>
+                    <th>Server Md5-Wert</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div class="table_row">
+        <table>
+            <tbody>
+                <tr>
+                    <td class="completePath"></td>
+                    <td class="expectedMd5"></td>
+                    <td class="recievedMd5"></td>
+                </tr>            
+            </tbody>
+        </table>
+    </div>
+</div>      
+            
+            
+<div id="progessDialog" class="panel panel-info">
+    <div class="panel-heading"><b>Systeme werden abgefragt ...</b><span class="glyphicon glyphicon-remove"></span></div>
+    <div class="panel-body">
+        <div class="progress progress-striped active">
+            <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"><span><nobr></nobr></span></div>
+        </div>
+        <div id="show_results_container">
+            <button id="show_results" class="btn btn-default">Ergebnisse anzeigen</button>
+        </div>
+    </div>
+</div>

@@ -28,7 +28,7 @@ class checkMd5
     {
         $result = array();
         $fileDataArray = $this->request->getFileData("inputFile");
-
+        
         if (!empty($fileDataArray["name"])) {
             $csv = file_get_contents($fileDataArray["tmp_name"]);
         } else {

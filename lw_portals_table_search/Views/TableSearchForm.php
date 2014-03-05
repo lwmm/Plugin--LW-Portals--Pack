@@ -32,6 +32,11 @@ class TableSearchForm
         $this->view->tablesCollection = $tablesCollection;
     }
     
+    public function setCollection($collection)
+    {
+        $this->view->collection = $collection;
+    }
+    
     public function setPageIndexes($pageIndexes)
     {
         $this->view->pageIndexes = $pageIndexes;

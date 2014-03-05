@@ -28,11 +28,15 @@ class checkMd5
     {
         $result = array();
         $fileDataArray = $this->request->getFileData("inputFile");
-        
+
         if (!empty($fileDataArray["name"])) {
             $csv = file_get_contents($fileDataArray["tmp_name"]);
         } else {
-            $csv = $this->request->getRaw("configPath") . "," . $this->request->getRaw("path") . "," . $this->request->getRaw("expectedMd5") . ";";
+            $pluginPathModule = "";
+            if ($this->request->getAlnum("plugin_path_module")) {
+                $pluginPathModule = ":" . $this->request->getAlnum("plugin_path_module");
+            }
+            $csv = $this->request->getRaw("configPath") . $pluginPathModule . "," . $this->request->getRaw("path") . "," . $this->request->getRaw("expectedMd5") . ";";
             $this->respone->setDataByKey("postArray", array("configPath" => str_replace("CONFIG:path_", "", $this->request->getRaw("configPath")), "path" => $this->request->getRaw("path"), "expectedMd5" => $this->request->getRaw("expectedMd5")));
         }
 
@@ -48,8 +52,8 @@ class checkMd5
             foreach ($collection as $entity) {
                 $result[$entity->getValueByKey("name")] = $this->compareFiles($entity, $files);
             }
-        } 
-     
+        }
+        
         $this->respone->setDataByKey("Md5Results", $result);
         return $this->respone;
     }
@@ -89,14 +93,14 @@ class checkMd5
         } else {
             $url = $entity->getValueByKey("url") . "/";
         }
-        foreach ($files as $file) {            
+        
+        foreach ($files as $file) {
             $json = file_get_contents($url . "index.php?getSystemInfo=1&cmd=Md5&configPath=" . $file["configPath"] . "&filePath=" . urlencode($file["path"]) . "&expectedMd5=" . $file["expectedMd5"]);
             $result = json_decode($json, true);
             if (is_array($result)) {
                 $array[] = $result;
             }
         }
-
         return $array;
     }
 

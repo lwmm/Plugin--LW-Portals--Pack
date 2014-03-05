@@ -57,6 +57,10 @@ class Frontend
                 $response = \LwPortalsTableSearch\Model\Portal\CommandResolver\getPortalEntityById::getInstance(array("id" => $this->request->getInt("id")))->resolve();
                 $entity = $response->getDataByKey("PortalEntity");
                 $view->setEntity($entity);
+            } else {
+                $response = \LwPortalsTableSearch\Model\Portal\CommandResolver\getPortalsCollection::getInstance()->resolve();
+                $collection = $response->getDataByKey("PortalEntitiesCollection");
+                $view->setCollection($collection);
             }
             
             $response = \LwPortalsTableSearch\Model\Table\CommandResolver\getTablesCollection::getInstance()->resolve();
@@ -77,7 +81,11 @@ class Frontend
             $results = $response->getDataByKey("SearchResults");
             $post = $response->getDataByKey("postArray");
             
-            return $this->showTableSearchFormAction($results, $post);
+            if ($this->request->getInt("ajax")) {
+                die(json_encode($results));
+            } else {
+                return $this->showTableSearchFormAction($results, $post);
+            }
         }
     }
     

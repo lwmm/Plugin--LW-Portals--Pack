@@ -11,6 +11,8 @@ md5=??              ----        "       lw_portals_md5              "
 collector=??        ----        "       lw_portals_collector        "
 plugins=??          ----        "       lw_portals_plugins          "
 packages=??         ----        "       lw_portals_packages         "
+tableSearch=??      ----        "       lw_portals_table_search     "
+httpsChecker=??     ----        "       lw_portals_https_checker    "
 
 
 "benötigte" Parameter je Plugin:
@@ -18,10 +20,11 @@ lw_portals_loader           => ( "admin" => ? )
 lw_portals_list             => ( "admin" => ?, "md5" => ??, "collector" => ??, "plugins" => ??, "packages" => ??, tableSearch => ?? )
 lw_portals_plugins          => ( "portals" => ?? )
 lw_portals_packages         => ( "portals" => ?? )
-lw_portals_md5              => ( "admin" => ?, portals => ?? )
+lw_portals_md5              => ( "admin" => ?, portals => ??, httpsCheck => ?? )
 lw_portals_collector        => ( "admin" => ?, portals => ?? )
 lw_portals_table_search     => ( "admin" => ?, portals => ?? )
 lw_portals_config           => ( "admin" => ? )
+lw_portals_https_checker    => ( "admin" => ? )
 
 
 Wird das lw_portals_loader Plugin verwendet muss nur der "admin"-Parameter übergeben werden.
@@ -29,3 +32,21 @@ Wird das lw_portals_loader Plugin verwendet muss nur der "admin"-Parameter über
 
 "SB Admin 2" ist in  .../c_media/sb_admin2/  zu installieren 
 unter  ../c_media/sb_admin2/img/ eventuell ein Logo kopieren
+
+================================================================================
+
+Beispiel CSV für Md5 Vergleich:
+
+[CONFIG_PATH], [FILE_PATH], [EXPECTED_MD5];
+
+media,c4_backend/css/bootstrap.css,89jfg8s8fsd8isd70;
+plugin_path:lw,lw_portals_list/lw_portals_list.class.php,c1434f05d7cfbab9594b0281826b4084; (hinter plugin_path das module anhaengen und mit ":" trennen )
+
+================================================================================
+
+TO DO:
+
+-   piwik-graph erst auf anfrage anzeigen lassen ( reduzierung der portal-detail-ansicht-ladezeit )
+-   listtool shellscript anpassen ( nur portale bei denen das listtool2 installiert ist, sollen ausgewertet werden )
+-   ( md5 template ) jsdifflib panel wurde an das contentr-wrapper von sbadmin2 gehangen, bei anderen templates
+    kommt es zu platzierungsproblemen

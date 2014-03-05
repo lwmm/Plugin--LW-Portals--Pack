@@ -21,8 +21,6 @@
     <script src="<?php echo $this->mediaUrl; ?>sb_admin2/js/jquery-1.10.2.js"></script>
     <script src="<?php echo $this->mediaUrl; ?>sb_admin2/js/bootstrap.min.js"></script>
     <script src="<?php echo $this->mediaUrl; ?>sb_admin2/js/plugins/metisMenu/jquery.metisMenu.js"></script>   
-    <script type="text/javascript" src="<?php echo $this->mediaUrl . "modules/spinloader/spin.min.js"; ?>"></script>
-
     <!-- Page-Level Plugin Scripts - Blank -->
 
     <!-- SB Admin Scripts - Include with every page -->
@@ -30,27 +28,11 @@
 
     <style>
         .nav li.selected{background-color: #EEE;}
-        
-        #greyOverlay{
-            display:none;
-            position:absolute;
-            top:0px;
-            left:0px;
-            bottom:0px;
-            right:0px;
-            width:100%;
-            height:100%;
-            z-index: 10;
-            background-color: #fff;
-            opacity: 0.7;
-            filter: Alpha(Opacity=70);
-        }
     </style>
 </head>
 
 
 <body>
-    <div id="greyOverlay">&nbsp;</div>
     <div id="wrapper">
         
         <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
@@ -88,27 +70,8 @@
                     <?php if($this->isAdmin): ?>
                         <li <?php if($this->portalsPlugin == "LwPortalsMd5"): ?>class="selected"<?php endif; ?>><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsMd5", "cmd" => "showMd5CheckForm")); ?>"><span class="glyphicon glyphicon-retweet"></span> Md5 Abgleich</a></li>
                         <li <?php if($this->portalsPlugin == "LwPortalsTableSearch"): ?>class="selected"<?php endif; ?>><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsTableSearch", "cmd" => "showTableSearchForm")); ?>"><span class="glyphicon glyphicon-search"></span> Tabellensuche</a></li>
-                        <li><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsCollector")); ?>" onclick="
-                            $('#greyOverlay').show();
-                            var opts = {
-                                lines: 13, // The number of lines to draw
-                                length: 16, // The length of each line
-                                width: 14, // The line thickness
-                                radius: 25, // The radius of the inner circle
-                                corners: 1, // Corner roundness (0..1)
-                                rotate: 0, // The rotation offset
-                                color: '#2A649D', // #rgb or #rrggbb
-                                speed: 1, // Rounds per second
-                                trail: 44, // Afterglow percentage
-                                shadow: true, // Whether to render a shadow
-                                hwaccel: false, // Whether to use hardware acceleration
-                                className: 'spinner', // The CSS class to assign to the spinner
-                                zIndex: 2e9, // The z-index (defaults to 2000000000)
-                                top: '350', // Top position relative to parent in px
-                                left: 'auto' // Left position relative to parent in px
-                            };
-                            var target = document.getElementById('greyOverlay');
-                            var spinner = new Spinner(opts).spin(target);"><span class="glyphicon glyphicon-stats"></span> Alle Portalstatistiken erneuern</a></li>
+                        <!-- <li><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsCollector")); ?>"><span class="glyphicon glyphicon-stats"></span> Alle Portalstatistiken erneuern</a></li> -->
+                        <li <?php if($this->portalsPlugin == "LwPortalsHttpsCheck"): ?>class="selected"<?php endif; ?>><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsHttpsCheck", "cmd" => "showCheckForm")); ?>"><span class="glyphicon glyphicon-lock"></span> HTTPS Check</a></li>
                         <li <?php if($this->portalsPlugin == "LwPortalsConfig"): ?>class="selected"<?php endif; ?>><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsConfig", "cmd" => "showConfigForm")); ?>"><span class="glyphicon glyphicon-cog"></span> Konfiguration</a></li>
                     <?php endif; ?>
                     

@@ -1,11 +1,19 @@
+<link rel="stylesheet" type="text/css" href="<?php echo $this->mediaUrl; ?>modules/jsdifflib/diffview.css"/>
+<script type="text/javascript" src="<?php echo $this->mediaUrl; ?>modules/jsdifflib/diffview.js"></script>
+<script type="text/javascript" src="<?php echo $this->mediaUrl; ?>modules/jsdifflib/difflib.js"></script>
+
 <script>
-    $(document).ready(function() {
+    $(document).ready(function() {       
+            
         $(window).bind("resize", function() {
             elementResize();
         });
         function elementResize() {
             $("#progessDialog").css("left", ( ($("#page-wrapper").width() / 2 ) - $("#progessDialog").width() / 2 ) );
             $("#progessDialog").css("top", ( ($("#page-wrapper").height() / 4 ) - $("#progessDialog").height() / 2 ) );
+            $("#textDiffDialog").css("left", 0 - $("#page-wrapper").offset().left);
+            $("#textDiffDialog").css("top", 7 - $("#page-wrapper").offset().top);
+            $("#textDiffDialog").css("width", $(window).width() - 30);
         }
         elementResize();
 
@@ -16,7 +24,9 @@
 
             if ($this->entity){
                 echo "" . PHP_EOL;
-                echo "portalArray['" . $this->entity->getValueByKey("name") . "'] = " . $this->entity->getId() . ";" . PHP_EOL;
+                if($this->entity->getValueByKey("scan_exclude") < 1 ){
+                    echo "portalArray['" . $this->entity->getValueByKey("name") . "'] = " . $this->entity->getId() . ";" . PHP_EOL;
+                }
                 echo "" . PHP_EOL;
             } else if($this->collection) {
 
@@ -36,11 +46,18 @@
        var data = new FormData();
        $("#inputFile").change(function(){
             data.append('inputFile', this.files[0]);
+            $("#filePath").val("");
+            $("#expectedMd5").val("");
        });
 
        $("#submit_btn").click(function(){
             if($("#inputFile").val() !== "" || ($("#filePath").val() !== "" && $("#expectedMd5").val() !== "")){
                 $("#container_tables").hide();
+                $("#progessDialog div.progress-bar").removeClass("progress-bar-success");
+                $("#progessDialog").removeClass("panel-success");
+                $("#progessDialog").addClass("panel-default");
+                $("#progessDialog div.panel-heading span").hide();
+                $("#progessDialog #show_results_container").hide();
                 $("#container_tables").html("");
                 $("#progessDialog").show();
 
@@ -48,7 +65,7 @@
                     data.append('configPath', $("#configPath").val());
                     data.append('path', $("#filePath").val());
                     data.append('expectedMd5', $("#expectedMd5").val());
-
+                    data.append('plugin_path_module', $("#plugin_path_module").val());
                 }
 
                 var portalArray = getPreparedArray();
@@ -77,28 +94,59 @@
                          processData: false,
                          contentType: false
                          }).done(function(response){
+                             checkHttps(response, portal, portal_id);
                              i++;
                              percent = ((i/portalsCount) * 100).toFixed(2);
                              $("#progessDialog div.progress-bar").css("width", percent + "%");
                              $("#progessDialog div.progress-bar span").html("<nobr>" + portal +" ( " + percent +"% )</nobr>");
                              if( i === portalsCount) {
+                                $("#progessDialog div.progress-bar").addClass("progress-bar-success");
+                                $("#progessDialog").removeClass("panel-default");
+                                $("#progessDialog").addClass("panel-success");
                                 $("#progessDialog div.panel-heading span").show();
                                 $("#progessDialog #show_results_container").show();
                              }
-                             buildTable(response);
                      });
                 });
+                $("#inputFile").val("");
+                data = new FormData();
             }
        });
 
-       function buildTable(jsonResponse)
+       function checkHttps(md5Response, portal, portal_id)
+       {
+           <?php if(isset($this->pageIndexes["httpsCheck"])) { $indexHttpsCheck = $this->pageIndexes["httpsCheck"]; } else { $indexHttpsCheck = 0; } ?>
+           $.ajax({
+                 url: "<?php echo \lw_page::getInstance($indexHttpsCheck)->getUrl(array("portalsPlugin" =>"LwPortalsHttpsCheck", "cmd" => "checkHttps", "ajax" => 1)); ?>&id=" + portal_id,
+                 type: "POST",
+                 dataType: "json",
+                 processData: false,
+                 contentType: false
+                 }).done(function(response){
+                     if(response[portal][0]["https"] === true){
+                         buildTable(md5Response, true);
+                     }else{ 
+                        buildTable(md5Response, false);
+                     }
+             });
+       }
+
+       function buildTable(jsonResponse, httpsCheck)
        {
            var portalArray = getPreparedArray();
            $.each(jsonResponse, function(portal, results) {
+               if(httpsCheck === true ){
+                   var httpsSpan = "https <span style='color:green;' class='glyphicon glyphicon-ok'></span>";
+               } else {
+                   var httpsSpan = "https <span style='color:darkred;' class='glyphicon glyphicon-remove'></span>";
+               }
+               
                $("#hiddenElements div.portalTableContainer").attr("id","container_" + portalArray[portal]).clone().appendTo($("#container_tables"));
                $("#hiddenElements div.headline h3").html(portal).clone().appendTo($("#container_tables div#container_" + portalArray[portal]));
+               $("#hiddenElements div.headline span#httpsStatus").html(httpsSpan).clone().appendTo($("#container_tables div#container_" + portalArray[portal]));
                $("#hiddenElements div.table_frame table").clone().appendTo($("#container_tables div#container_" + portalArray[portal]));
                $.each(results, function(nr, result) {
+                   $("#hiddenElements div.table_row tr").removeClass("compareMe");
                    $("#hiddenElements div.table_row tr td.completePath").html(result.completePath);
                    $("#hiddenElements div.table_row tr td.expectedMd5").html(result.expectedMd5);
 
@@ -111,7 +159,10 @@
                    if(result.recievedMd5 === result.expectedMd5) {
                        $("#hiddenElements div.table_row tr").css("color","green");
                    } else {
-                      $("#hiddenElements div.table_row tr").css("color","darkred");
+                       if(result.recievedMd5 !== false && httpsCheck === true) {
+                           $("#hiddenElements div.table_row tr").addClass("compareMe");
+                       }
+                       $("#hiddenElements div.table_row tr").css("color","darkred");
                    }
 
                    $("#hiddenElements div.table_row tr").clone().appendTo($("#container_tables div#container_" + portalArray[portal] + " > table > tbody"));
@@ -128,8 +179,87 @@
           $("#container_tables").show();
           $("#progessDialog").hide();
        });
-
+       
+       $("#configPath").change(function() {
+           if($(this).val() === "CONFIG:plugin_path") {
+               $("#container_plugin_path_module").show();
+               $("#container_path").removeClass("col-sm-6");
+               $("#container_path").addClass("col-sm-5");
+           } else {
+               $("#container_plugin_path_module").hide();
+               $("#container_path").removeClass("col-sm-5");
+               $("#container_path").addClass("col-sm-6");
+           }
+       });
+       
+       $("#compare_btn").click(function(){
+           $("#textDiffDialog #diffoutput").show();
+           $("#diffForm").hide();
+           $("#textDiffDialog").css("width", $("#textDiffDialog #diffoutput table.diff").width() + 30);
+           $("#page-wrapper").css("height", $("#textDiffDialog #diffoutput table.diff").height() + 120);
+       });
+       
+       $("#textDiffDialog div.panel-heading span").click(function(){
+           $("#page-wrapper").css("height", "");
+           $("#textDiffDialog").hide();
+           $("#textDiffDialog #serverFile").val("");
+           $("#textDiffDialog #fileForCompare").val("");
+           $("#textDiffDialog #diffoutput").hide();
+           $("#greyOverlay").hide();
+       });
+ 
+        $(document).on("click", "#container_tables tr.compareMe", function(e) {            
+            var portalName = $(this).closest(".portalTableContainer").find("h3").html();
+            var portalArray = getPreparedArray();
+            var portal_id = portalArray[portalName];
+            var filePath = $(this).find("td.completePath").html();
+            
+            $.ajax({
+                 url: "<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsMd5", "cmd" => "getFileContent")); ?>&id=" + portal_id + "&filePath=" + encodeURIComponent(filePath),
+                 data: data,
+                 type: "POST",
+                 dataType: "json",
+                 processData: false,
+                 contentType: false
+                 }).done(function(response){
+                     //alert(response);
+                     $("#textDiffDialog #serverFilePath").html(response[portalName][0]['filePath']);
+                     $("#textDiffDialog #serverFile").val(response[portalName][0]['content']);
+             });
+             $("#greyOverlay").show();
+             $("#textDiffDialog").css("width", "100%");
+             $("#textDiffDialog #diffForm").show();
+             $("#textDiffDialog").show();
+             elementResize();
+             $('html, body').animate({ scrollTop: ($("#textDiffDialog").offset().top)}, 'slow');
+        });
+       
+       
     });
+    
+   function diffUsingJS(viewType) {
+	"use strict";
+	var byId = function (id) { return document.getElementById(id); },
+		base = difflib.stringAsLines(byId("fileForCompare").value),
+		newtxt = difflib.stringAsLines(byId("serverFile").value),
+		sm = new difflib.SequenceMatcher(base, newtxt),
+		opcodes = sm.get_opcodes(),
+		diffoutputdiv = byId("diffoutput"),
+		contextSize = 0;
+
+	diffoutputdiv.innerHTML = "";
+	contextSize = contextSize || null;
+
+	diffoutputdiv.appendChild(diffview.buildView({
+		baseTextLines: base,
+		newTextLines: newtxt,
+		opcodes: opcodes,
+		baseTextName: "Vergleichsdatei",
+		newTextName: "Datei auf dem Server",
+		contextSize: contextSize,
+		viewType: viewType
+	}));
+}
 </script>
 <style>
     #container_tables, #hiddenElements{display: none;}
@@ -150,11 +280,47 @@
         font-weight: bold;
         text-shadow: #333 2px 2px 1px;
     }
+    
+    #container_tables tr.compareMe{cursor: pointer;}
 
+    #textDiffDialog div.panel-heading span{
+        float: right;
+        cursor: pointer;
+    }
+    
     #show_results_container button{float: right;}
     #show_results_container{display: none;}
+    
+    #container_plugin_path_module{display: none;}
+    
+    table.diff{width: 100%!important;}
+    table.diff tbody tr th{width: 40px;}
+    #textDiffDialog{
+        position: absolute;
+        display: none;
+        z-index: 1001;
+    }
+    
+    #textDiffDialog #fileForCompare{height: 200px;}
+    #textDiffDialog #serverFile{display: none;}
+    
+    #greyOverlay{
+            display:none;
+            position:absolute;
+            top:0px;
+            left:0px;
+            bottom:0px;
+            right:0px;
+            width:100%;
+            height:100%;
+            z-index: 10;
+            background-color: #fff;
+            opacity: 0.7;
+            filter: Alpha(Opacity=70);
+        }
 </style>
 
+<div id="greyOverlay">&nbsp;</div>
 <?php if($this->entity): ?>
     <h1>Md5 - <?php echo $this->entity->getValueByKey("name"); ?></h1>
 <?php else: ?>
@@ -176,9 +342,13 @@
                 <?php foreach ($this->paths as $key => $value): ?>
                     <option value="CONFIG:path_<?php echo $key; ?>" <?php if($this->post["configPath"] == $key): ?>selected="selected"<?php endif; ?>><?php echo $key; ?></option>
                 <?php endforeach; ?>
+                <option value="CONFIG:plugin_path" <?php if($this->post["configPath"] == "CONFIG:plugin_path"): ?>selected="selected"<?php endif; ?>>plugin_path</option>
             </select>
         </div>
-        <div class="col-sm-6">
+        <div id="container_plugin_path_module" class="col-sm-1">
+            <input id="plugin_path_module" class="form-control" type="text" name="plugin_path_module" value="<?php echo $this->post["plugin_path_module"]; ?>"/>
+        </div>
+        <div id="container_path" class="col-sm-6">
             <input id="filePath" class="form-control" type="text" name="path" value="<?php echo $this->post["path"]; ?>"/>
         </div>
     </div>
@@ -253,7 +423,7 @@
 
 <div id="hiddenElements">
     <div class="portalTableContainer"></div>
-    <div class="headline"><h3>Test</h3></div>
+    <div class="headline"><h3>Test</h3><span id="httpsStatus" style='font-size:12px;'></span></div>
     <div class="table_frame">
         <table class="table table-striped">
             <thead>
@@ -281,14 +451,41 @@
 </div>
 
 
-<div id="progessDialog" class="panel panel-info">
+<div id="progessDialog" class="panel panel-default">
     <div class="panel-heading"><b>Systeme werden abgefragt ...</b><span class="glyphicon glyphicon-remove"></span></div>
     <div class="panel-body">
         <div class="progress progress-striped active">
-            <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"><span><nobr></nobr></span></div>
+            <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"><span><nobr></nobr></span></div>
         </div>
         <div id="show_results_container">
             <button id="show_results" class="btn btn-default">Ergebnisse anzeigen</button>
         </div>
+    </div>
+</div>
+            
+<div id="textDiffDialog" class="panel panel-default">
+    <div class="panel-heading"><b>TextDiff</b><span class="glyphicon glyphicon-remove"></span></div>
+    <div class="panel-body">
+	<div id="diffoutput"> </div>
+        <form id="diffForm" class="form-horizontal" role="form">
+            <div class="form-group">
+                <label for="serverFilePath" class="col-sm-2 control-label">Serverdatei</label>
+                <div class="col-sm-10">
+                    <p class="form-control" id="serverFilePath"></p>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="fileForCompare" class="col-sm-2 control-label">Vergleichsdatei</label>
+                <div class="col-sm-10">
+                    <textarea id="fileForCompare" class="form-control"></textarea>
+                    <textarea id="serverFile"></textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <input type="button" id="compare_btn" class="btn btn-default" onclick="diffUsingJS(0);" value="mit der Serverdatei vergleichen">
+                </div>
+            </div>
+        </form>
     </div>
 </div>

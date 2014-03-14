@@ -47,7 +47,19 @@ $db->bindParameter("lw_object", "s", "lw_portals_config");
 $result = $db->pselect1();
 $portalsConfig = unserialize($result["opt1clob"]);
 
-$db->setStatement("SELECT * FROM t:lw_info_portals WHERE scan_exclude = 0 OR scan_exclude IS NULL ORDER BY name ");
+$db->setStatement("SELECT * FROM t:lw_info_modules WHERE name = :name AND type = :type ");
+$db->bindParameter("name", "s","LwListtool");
+$db->bindParameter("type", "s", "package");
+$result = $db->pselect1();
+
+if($result){
+    $packageListtoolId = $result["id"];
+} else {
+    $packageListtoolId = 0;
+}
+
+$db->setStatement("SELECT p.*  FROM t:lw_info_portals p, t:lw_info_portals_modules pm WHERE (p.scan_exclude = 0 OR p.scan_exclude IS NULL) AND p.id = pm.pid AND pm.mid = :listtoolId ORDER BY p.name ");
+$db->bindParameter("listtoolId", "i", $packageListtoolId);
 $scanablePortals = $db->pselect();
 
 foreach ($scanablePortals as $portal) {
@@ -90,7 +102,7 @@ foreach ($array as $arr) {
     if ($db_files_new >= $portalsConfig["files_min_value"] && $db_files_old >= $portalsConfig["files_min_value"]) {
         $percent = round($db_files_new / $db_files_old * 100, 2);
 
-        if ($percent < 100) {
+        if ($percent < 100 && $percent > 0) {
             $reduceInPercent = 100 - $percent;
             if ($reduceInPercent >= $portalsConfig["files_warn_value"]) {
                 $errors[$arr["portalName"]]["warning"][] = utf8_decode(
@@ -106,7 +118,7 @@ foreach ($array as $arr) {
     if ($list_count_new >= $portalsConfig["list_min_value"] && $list_count_old >= $portalsConfig["list_min_value"]) {
         $percent = round($list_count_new / $list_count_old * 100, 2);
 
-        if ($percent < 100) {
+        if ($percent < 100 && $percent > 0) {
             $reduceInPercent = 100 - $percent;
             if ($reduceInPercent >= $portalsConfig["list_warn_value"]) {
                 $errors[$arr["portalName"]]["warning"][] = utf8_decode(
@@ -144,10 +156,16 @@ foreach ($errors as $portal => $err) {
     }
 }
 
-die($subject . PHP_EOL . PHP_EOL . $message);
+if ($message != "") {
+    die($subject . PHP_EOL . PHP_EOL . $message.PHP_EOL);
+} else {
+    die("ALL OK".PHP_EOL);
+}
 
-foreach($portalsConfig["email"] as $email){
-    if(filter_var($email, FILTER_VALIDATE_EMAIL)){
-        mail($email, $subject, $message);
+if ($message != "") {
+    foreach ($portalsConfig["email"] as $email) {
+        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            #mail($email, $subject, $message);
+        }
     }
 }

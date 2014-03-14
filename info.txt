@@ -44,9 +44,16 @@ plugin_path:lw,lw_portals_list/lw_portals_list.class.php,c1434f05d7cfbab9594b028
 
 ================================================================================
 
+Über den lw_portals_loader lassen sich weitere Plugins laden und im SbAdmin-Frame nutzen.
+Die folgenden Parameter werden an den lw_portals_loader Aufruf angehangen. 
+
+lw_url_observer             => ( "admin" => ? )
+
+================================================================================
+
 TO DO:
 
 -   piwik-graph erst auf anfrage anzeigen lassen ( reduzierung der portal-detail-ansicht-ladezeit )
 -   listtool shellscript anpassen ( nur portale bei denen das listtool2 installiert ist, sollen ausgewertet werden )
--   ( md5 template ) jsdifflib panel wurde an das contentr-wrapper von sbadmin2 gehangen, bei anderen templates
+-   ( md5 template ) jsdifflib panel wurde an das content-wrapper von sbadmin2 gehangen, bei anderen templates
     kommt es zu platzierungsproblemen

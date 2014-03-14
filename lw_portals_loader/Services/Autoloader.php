@@ -50,6 +50,10 @@ class Autoloader
             $path = $config["plugin_path"]["lw"] . "lw_portals_https_check";
             $filename = str_replace('LwPortalsHttpsCheck', $path, $className);
         }
+        if (strstr($className, 'LwUrlObserver')) {
+            $path = $config["plugin_path"]["lw"] . "lw_url_observer";
+            $filename = str_replace('LwUrlObserver', $path, $className);
+        }
         
         $filename = str_replace('\\', '/', $filename).'.php';
         if (is_file($filename)) {

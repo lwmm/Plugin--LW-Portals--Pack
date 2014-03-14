@@ -4,7 +4,7 @@ class lw_portals_loader extends lw_plugin
 {
 
     protected $request;
-    
+
     public function __construct()
     {
         parent::__construct();
@@ -21,17 +21,20 @@ class lw_portals_loader extends lw_plugin
             $admin = false;
         }
 
-        if($this->request->getAlnum("portalsPlugin")){
+        if ($this->request->getAlnum("portalsPlugin")) {
             $portalsPlugin = $this->request->getAlnum("portalsPlugin");
-        }else{
+        } elseif ($this->request->getAlnum("plugin")) {
+            $portalsPlugin = $this->request->getAlnum("plugin");
+        } else {
+
             $portalsPlugin = "LwPortalsList";
         }
-        
-        $controllerNamespace = "\\".$portalsPlugin."\\Controller\\Frontend";
-        if(!class_exists($controllerNamespace)){
+
+        $controllerNamespace = "\\" . $portalsPlugin . "\\Controller\\Frontend";
+        if (!class_exists($controllerNamespace)) {
             $controllerNamespace = "\\LwPortalsList\\Controller\\Frontend";
         }
-            
+
         $controller = new $controllerNamespace();
         $controller->setAdmin($admin);
 

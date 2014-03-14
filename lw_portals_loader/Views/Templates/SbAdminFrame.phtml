@@ -73,6 +73,7 @@
                         <!-- <li><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsCollector")); ?>"><span class="glyphicon glyphicon-stats"></span> Alle Portalstatistiken erneuern</a></li> -->
                         <li <?php if($this->portalsPlugin == "LwPortalsHttpsCheck"): ?>class="selected"<?php endif; ?>><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsHttpsCheck", "cmd" => "showCheckForm")); ?>"><span class="glyphicon glyphicon-lock"></span> HTTPS Check</a></li>
                         <li <?php if($this->portalsPlugin == "LwPortalsConfig"): ?>class="selected"<?php endif; ?>><a href="<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsConfig", "cmd" => "showConfigForm")); ?>"><span class="glyphicon glyphicon-cog"></span> Konfiguration</a></li>
+                        <li <?php if($this->portalsPlugin == "LwUrlObserver"): ?>class="selected"<?php endif; ?>><a href="<?php echo \lw_page::getInstance()->getUrl(array("plugin" =>"LwUrlObserver", "cmd" => "showStartPage")); ?>"><span class="glyphicon glyphicon-globe"></span> Url &Uuml;berwachung</a></li>
                     <?php endif; ?>
                     
                 </ul>

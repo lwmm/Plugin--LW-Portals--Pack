@@ -58,7 +58,7 @@
                 $("#progessDialog").addClass("panel-default");
                 $("#progessDialog div.panel-heading span").hide();
                 $("#progessDialog #show_results_container").hide();
-                $("#container_tables").html("");
+                $("#container_tables tbody").html("");
                 $("#progessDialog").show();
 
                 if($("#inputFile").val() === ""){
@@ -136,17 +136,15 @@
            var portalArray = getPreparedArray();
            $.each(jsonResponse, function(portal, results) {
                if(httpsCheck === true ){
-                   var httpsSpan = "https <span style='color:green;' class='glyphicon glyphicon-ok'></span>";
+                   var httpsSpan = "<span style='color:green;' class='glyphicon glyphicon-ok'></span>";
                } else {
-                   var httpsSpan = "https <span style='color:darkred;' class='glyphicon glyphicon-remove'></span>";
+                   var httpsSpan = "<span style='color:darkred;' class='glyphicon glyphicon-remove'></span>";
                }
-               
-               $("#hiddenElements div.portalTableContainer").attr("id","container_" + portalArray[portal]).clone().appendTo($("#container_tables"));
-               $("#hiddenElements div.headline h3").html(portal).clone().appendTo($("#container_tables div#container_" + portalArray[portal]));
-               $("#hiddenElements div.headline span#httpsStatus").html(httpsSpan).clone().appendTo($("#container_tables div#container_" + portalArray[portal]));
-               $("#hiddenElements div.table_frame table").clone().appendTo($("#container_tables div#container_" + portalArray[portal]));
+
                $.each(results, function(nr, result) {
                    $("#hiddenElements div.table_row tr").removeClass("compareMe");
+                   $("#hiddenElements div.table_row tr td.portal").html(portal);
+                   $("#hiddenElements div.table_row tr td.https").html(httpsSpan);
                    $("#hiddenElements div.table_row tr td.completePath").html(result.completePath);
                    $("#hiddenElements div.table_row tr td.expectedMd5").html(result.expectedMd5);
 
@@ -165,7 +163,7 @@
                        $("#hiddenElements div.table_row tr").css("color","darkred");
                    }
 
-                   $("#hiddenElements div.table_row tr").clone().appendTo($("#container_tables div#container_" + portalArray[portal] + " > table > tbody"));
+                   $("#hiddenElements div.table_row tr").clone().appendTo($("#container_tables table > tbody"));
                });
 
             });
@@ -209,10 +207,10 @@
        });
  
         $(document).on("click", "#container_tables tr.compareMe", function(e) {            
-            var portalName = $(this).closest(".portalTableContainer").find("h3").html();
+            var portalName = $("> td.portal", this).html();
             var portalArray = getPreparedArray();
             var portal_id = portalArray[portalName];
-            var filePath = $(this).find("td.completePath").html();
+            var filePath = $("> td.completePath", this).html();
             
             $.ajax({
                  url: "<?php echo \lw_page::getInstance()->getUrl(array("portalsPlugin" =>"LwPortalsMd5", "cmd" => "getFileContent")); ?>&id=" + portal_id + "&filePath=" + encodeURIComponent(filePath),
@@ -222,7 +220,6 @@
                  processData: false,
                  contentType: false
                  }).done(function(response){
-                     //alert(response);
                      $("#textDiffDialog #serverFilePath").html(response[portalName][0]['filePath']);
                      $("#textDiffDialog #serverFile").val(response[portalName][0]['content']);
              });
@@ -374,73 +371,29 @@
     </div>
 </form>
 
-<div id="container_tables"></div>
-
-<?php if($this->results): ?>
-    <?php if($this->entity): ?>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Pfad</th>
-                    <th>Erwarteter Md5-Wert</th>
-                    <th>Server Md5-Wert</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($this->results[$this->entity->getValueByKey("name")] as $file): ?>
-                    <tr style="color: <?php if($file["expectedMd5"] == $file["recievedMd5"] && $file["expectedMd5"] != ""): ?>green<?php else: ?>darkred<?php endif; ?>">
-                        <td><?php echo $file["completePath"]; ?></td>
-                        <td><?php echo $file["expectedMd5"]; ?></td>
-                        <td><?php if(!$file["recievedMd5"]){ echo "Datei existiert nicht !"; } else { echo $file["recievedMd5"]; } ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php else: ?>
-        <?php foreach($this->results as $portal => $files): ?>
-            <h3><?php echo $portal; ?></h3>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Pfad</th>
-                        <th>Erwarteter Md5-Wert</th>
-                        <th>Server Md5-Wert</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($files as $file): ?>
-                        <tr style="color: <?php if($file["expectedMd5"] == $file["recievedMd5"] && $file["expectedMd5"] != ""): ?>green<?php else: ?>darkred<?php endif; ?>">
-                            <td><?php echo $file["completePath"]; ?></td>
-                            <td><?php echo $file["expectedMd5"]; ?></td>
-                            <td><?php if(!$file["recievedMd5"]){ echo "Datei existiert nicht !"; } else { echo $file["recievedMd5"]; } ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php endforeach; ?>
-    <?php endif; ?>
-<?php endif; ?>
+<div id="container_tables">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Portal</th>
+                <th>https</th>
+                <th>Pfad</th>
+                <th>Erwarteter Md5-Wert</th>
+                <th>Server Md5-Wert</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
 
 <div id="hiddenElements">
-    <div class="portalTableContainer"></div>
-    <div class="headline"><h3>Test</h3><span id="httpsStatus" style='font-size:12px;'></span></div>
-    <div class="table_frame">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Pfad</th>
-                    <th>Erwarteter Md5-Wert</th>
-                    <th>Server Md5-Wert</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-    </div>
     <div class="table_row">
         <table>
             <tbody>
                 <tr>
+                    <td class="portal"></td>
+                    <td class="https"></td>
                     <td class="completePath"></td>
                     <td class="expectedMd5"></td>
                     <td class="recievedMd5"></td>
